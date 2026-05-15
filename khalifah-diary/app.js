@@ -159,6 +159,7 @@ const HADITHS = [
 // DATA: PUBLIC HOLIDAYS MALAYSIA 2025–2026
 // ═══════════════════════════════════════════
 const PUBLIC_HOLIDAYS = {
+  // ── Cuti Umum Nasional 2025 ──
   "2025-01-01": { name: "Tahun Baru", type: "holiday" },
   "2025-01-29": { name: "Tahun Baru Cina", type: "holiday" },
   "2025-01-30": { name: "Tahun Baru Cina (Hari 2)", type: "holiday" },
@@ -167,6 +168,7 @@ const PUBLIC_HOLIDAYS = {
   "2025-03-29": { name: "Israk dan Mikraj", type: "holiday" },
   "2025-03-30": { name: "Awal Ramadan", type: "holiday" },
   "2025-03-31": { name: "Good Friday (Sabah/Sarawak)", type: "holiday" },
+  "2025-04-14": { name: "Nuzul Al-Quran", type: "holiday", state: "Kelantan" },
   "2025-04-29": { name: "Hari Raya Aidilfitri", type: "holiday" },
   "2025-04-30": { name: "Hari Raya Aidilfitri (Hari 2)", type: "holiday" },
   "2025-05-01": { name: "Hari Pekerja", type: "holiday" },
@@ -178,16 +180,20 @@ const PUBLIC_HOLIDAYS = {
   "2025-09-16": { name: "Hari Malaysia", type: "holiday" },
   "2025-10-03": { name: "Maulidur Rasul", type: "holiday" },
   "2025-10-20": { name: "Deepavali", type: "holiday" },
+  "2025-11-11": { name: "Hari Keputeraan Sultan Kelantan", type: "holiday", state: "Kelantan" },
   "2025-12-25": { name: "Hari Krismas", type: "holiday" },
+  // ── Cuti Umum Nasional 2026 ──
   "2026-01-01": { name: "Tahun Baru 2026", type: "holiday" },
   "2026-01-17": { name: "Tahun Baru Cina 2026", type: "holiday" },
   "2026-01-18": { name: "Tahun Baru Cina (Hari 2) 2026", type: "holiday" },
   "2026-02-01": { name: "Hari Wilayah Persekutuan", type: "holiday" },
+  "2026-03-04": { name: "Nuzul Al-Quran 2026", type: "holiday", state: "Kelantan" },
   "2026-03-19": { name: "Israk dan Mikraj 2026", type: "holiday" },
   "2026-04-03": { name: "Good Friday 2026", type: "holiday" },
   "2026-05-01": { name: "Hari Pekerja", type: "holiday" },
   "2026-08-31": { name: "Hari Kebangsaan", type: "holiday" },
   "2026-09-16": { name: "Hari Malaysia", type: "holiday" },
+  "2026-11-11": { name: "Hari Keputeraan Sultan Kelantan", type: "holiday", state: "Kelantan" },
   "2026-12-25": { name: "Hari Krismas", type: "holiday" }
 };
 
@@ -233,12 +239,10 @@ let touchStartY = 0;
 // HIJRI DATE CALCULATION
 // ═══════════════════════════════════════════
 function toHijri(year, month, day) {
-  // Based on the Kuwaiti algorithm
   let jd = Math.floor((1461 * (year + 4800 + Math.floor((month - 14) / 12))) / 4)
     + Math.floor((367 * (month - 2 - 12 * (Math.floor((month - 14) / 12)))) / 12)
     - Math.floor((3 * (Math.floor((year + 4900 + Math.floor((month - 14) / 12)) / 100))) / 4)
     + day - 32075;
-
   let l = jd - 1948440 + 10632;
   let n = Math.floor((l - 1) / 10631);
   l = l - 10631 * n + 354;
@@ -249,13 +253,7 @@ function toHijri(year, month, day) {
   let monthH = Math.floor((24 * l) / 709);
   let dayH   = l - Math.floor((709 * monthH) / 24);
   let yearH  = 30 * n + j - 30;
-
   return { year: yearH, month: monthH, day: dayH };
-}
-
-function hijriString(date) {
-  const h = toHijri(date.getFullYear(), date.getMonth() + 1, date.getDate());
-  return `${h.day} ${HIJRI_MONTHS[h.month - 1]} ${h.year} H`;
 }
 
 function hijriDay(date) {
@@ -264,7 +262,6 @@ function hijriDay(date) {
 }
 
 function hijriMonthName(year, month) {
-  // Return Hijri month name for middle of given Gregorian month
   const mid = new Date(year, month, 15);
   const h = toHijri(mid.getFullYear(), mid.getMonth() + 1, mid.getDate());
   return `${HIJRI_MONTHS[h.month - 1]} ${h.year} H`;
@@ -292,19 +289,12 @@ function updateClock() {
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
   const ss = String(now.getSeconds()).padStart(2, '0');
-
   const clockEl = document.getElementById('heroClock');
   if (clockEl) clockEl.textContent = `${hh}:${mm}:${ss}`;
-
   const masihiEl = document.getElementById('heroMasihi');
-  if (masihiEl) {
-    masihiEl.textContent = `${MALAY_DAYS[now.getDay()]}, ${now.getDate()} ${MALAY_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
-  }
-
+  if (masihiEl) masihiEl.textContent = `${MALAY_DAYS[now.getDay()]}, ${now.getDate()} ${MALAY_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
   const hijriEl = document.getElementById('heroHijri');
-  if (hijriEl) {
-    hijriEl.textContent = arabicHijriString(now);
-  }
+  if (hijriEl) hijriEl.textContent = arabicHijriString(now);
 }
 
 // ═══════════════════════════════════════════
@@ -314,25 +304,67 @@ function initStars() {
   const canvas = document.getElementById('starsCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
+  const hero = document.getElementById('hero');
 
   let stars = [];
+  const mouse = { x: -999, y: -999 };
+  const REPEL = 130, SPRING = 0.04, DAMP = 0.88, LINE = 80;
+
   const resize = () => {
     canvas.width  = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
-    stars = Array.from({ length: 160 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 1.2 + 0.2,
-      alpha: Math.random(),
-      speed: Math.random() * 0.004 + 0.001
-    }));
+    stars = Array.from({ length: 160 }, () => {
+      const ox = Math.random() * canvas.width;
+      const oy = Math.random() * canvas.height;
+      return { ox, oy, x: ox, y: oy, vx: 0, vy: 0,
+        r: Math.random() * 1.2 + 0.2,
+        alpha: Math.random(),
+        phase: Math.random() * Math.PI * 2,
+        speed: Math.random() * 0.018 + 0.006 };
+    });
   };
+
+  hero.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+  }, { passive: true });
+  hero.addEventListener('mouseleave', () => { mouse.x = -999; mouse.y = -999; }, { passive: true });
 
   const draw = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     stars.forEach(s => {
-      s.alpha += s.speed;
-      if (s.alpha > 1 || s.alpha < 0) s.speed *= -1;
+      s.phase += s.speed;
+      s.alpha = 0.25 + 0.75 * (0.5 + 0.5 * Math.sin(s.phase));
+      const dx = s.x - mouse.x, dy = s.y - mouse.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < REPEL * REPEL && d2 > 0) {
+        const d = Math.sqrt(d2), f = (REPEL - d) / REPEL;
+        s.vx += (dx / d) * f * 2.8;
+        s.vy += (dy / d) * f * 2.8;
+      }
+      s.vx += (s.ox - s.x) * SPRING;
+      s.vy += (s.oy - s.y) * SPRING;
+      s.vx *= DAMP; s.vy *= DAMP;
+      s.x += s.vx; s.y += s.vy;
+    });
+    const LINE2 = LINE * LINE;
+    for (let i = 0; i < stars.length - 1; i++) {
+      for (let j = i + 1; j < stars.length; j++) {
+        const dx = stars[i].x - stars[j].x, dy = stars[i].y - stars[j].y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < LINE2) {
+          const a = (1 - Math.sqrt(d2) / LINE) * 0.13;
+          ctx.beginPath();
+          ctx.moveTo(stars[i].x, stars[i].y);
+          ctx.lineTo(stars[j].x, stars[j].y);
+          ctx.strokeStyle = `rgba(180,210,255,${a})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    stars.forEach(s => {
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(200,220,255,${s.alpha})`;
@@ -355,8 +387,7 @@ function initRegionSelector() {
 
   Object.keys(ZONES).forEach(state => {
     const opt = document.createElement('option');
-    opt.value = state;
-    opt.textContent = state;
+    opt.value = state; opt.textContent = state;
     stateSelect.appendChild(opt);
   });
 
@@ -373,7 +404,6 @@ function initRegionSelector() {
     });
   });
 
-  // Load default: KTN02 (Pasir Mas, Kelantan)
   stateSelect.value = "Kelantan";
   stateSelect.dispatchEvent(new Event('change'));
   zoneSelect.value = "KTN02";
@@ -382,39 +412,24 @@ function initRegionSelector() {
     const zone = zoneSelect.value;
     if (!zone) { showToast("Sila pilih zon terlebih dahulu"); return; }
     fetchPrayerTimes(zone);
-    setTimeout(() => {
-      document.getElementById('solat').scrollIntoView({ behavior: 'smooth' });
-    }, 300);
+    setTimeout(() => document.getElementById('solat').scrollIntoView({ behavior: 'smooth' }), 300);
   });
 }
 
 // ═══════════════════════════════════════════
 // PRAYER TIME API
-// e-solat.gov.my does not send CORS headers
-// that allow requests from github.io origins,
-// so we try the direct URL first (works when
-// served locally or from the same domain) and
-// fall back to the allorigins CORS proxy so
-// the app functions correctly on GitHub Pages.
-// Neither path uses eval() or new Function().
 // ═══════════════════════════════════════════
 const ESOLAT_BASE = 'https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=';
 const CORS_PROXY  = 'https://api.allorigins.win/get?url=';
 
 async function fetchWithFallback(zone) {
   const apiUrl = ESOLAT_BASE + encodeURIComponent(zone);
-
-  // Attempt 1: direct (works on localhost / same-origin environments)
   try {
     const res = await fetch(apiUrl, { mode: 'cors' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data?.prayerTime?.[0]) return data;
-  } catch (_) {
-    // Direct fetch failed — fall through to proxy
-  }
-
-  // Attempt 2: allorigins CORS proxy (works on GitHub Pages)
+  } catch (_) {}
   const proxyUrl = CORS_PROXY + encodeURIComponent(apiUrl);
   const proxyRes = await fetch(proxyUrl);
   if (!proxyRes.ok) throw new Error('Proxy HTTP ' + proxyRes.status);
@@ -427,107 +442,66 @@ async function fetchWithFallback(zone) {
 async function fetchPrayerTimes(zone) {
   const loading     = document.getElementById('prayerLoading');
   const placeholder = document.getElementById('prayerPlaceholder');
-
   placeholder.style.display = 'none';
   loading.style.display = 'flex';
   clearPrayerCards();
-
   try {
     const data = await fetchWithFallback(zone);
     prayerData = data.prayerTime[0];
     loading.style.display = 'none';
     renderPrayerCards(prayerData);
-
     const bearing = data.bearing || '';
     if (bearing) {
-      const info = document.getElementById('bearingInfo');
       document.getElementById('bearingText').textContent = 'Arah Kiblat: ' + bearing;
-      info.style.display = 'flex';
+      document.getElementById('bearingInfo').style.display = 'flex';
     }
-
     const zoneText = document.getElementById('zoneSelect').selectedOptions[0]?.textContent || zone;
     document.getElementById('solatSubtitle').textContent = zoneText;
-
     startCountdown();
   } catch (err) {
     loading.style.display = 'none';
     placeholder.style.display = 'block';
     const icon = document.createElement('div');
-    icon.className = 'placeholder-icon';
-    icon.textContent = '⚠️';
+    icon.className = 'placeholder-icon'; icon.textContent = '⚠️';
     const msg = document.createElement('p');
     msg.textContent = 'Gagal mendapatkan waktu solat. Sila cuba lagi.';
     const detail = document.createElement('small');
     detail.textContent = err.message;
-    msg.appendChild(document.createElement('br'));
-    msg.appendChild(detail);
+    msg.appendChild(document.createElement('br')); msg.appendChild(detail);
     placeholder.innerHTML = '';
-    placeholder.appendChild(icon);
-    placeholder.appendChild(msg);
+    placeholder.appendChild(icon); placeholder.appendChild(msg);
   }
 }
 
 function clearPrayerCards() {
-  const grid = document.getElementById('prayerGrid');
-  // Remove prayer cards but keep loading / placeholder
-  grid.querySelectorAll('.prayer-card').forEach(c => c.remove());
+  document.getElementById('prayerCards').innerHTML = '';
 }
 
 function renderPrayerCards(data) {
-  const grid = document.getElementById('prayerGrid');
-  const now  = new Date();
-
-  // Find current / next prayer
-  const times = PRAYER_META.map(m => ({
-    ...m,
-    timeStr: data[m.key],
-    timeDate: parseTime(data[m.key])
-  }));
-
+  const container = document.getElementById('prayerCards');
+  const now = new Date();
+  const times = PRAYER_META.map(m => ({ ...m, timeDate: parseTime(data[m.key]) }));
   let nextIdx = -1;
   for (let i = 0; i < times.length; i++) {
     if (times[i].timeDate > now) { nextIdx = i; break; }
   }
-
   PRAYER_META.forEach((meta, idx) => {
     const card = document.createElement('div');
     card.className = 'prayer-card';
     if (nextIdx !== -1 && idx === nextIdx) card.classList.add('active');
     if (nextIdx !== -1 && idx < nextIdx) card.classList.add('past');
-
     const badge = idx === nextIdx ? '<div class="prayer-badge">Seterusnya</div>' : '';
-    card.innerHTML = `
-      ${badge}
-      <span class="prayer-icon">${meta.icon}</span>
-      <div class="prayer-name-arabic">${meta.arabic}</div>
-      <div class="prayer-name">${meta.label}</div>
-      <div class="prayer-time">${data[meta.key] || '–'}</div>
-    `;
-
-    grid.appendChild(card);
-
-    // GSAP entrance
-    if (window.gsap) {
-      gsap.from(card, {
-        opacity: 0,
-        y: 30,
-        scale: 0.9,
-        duration: 0.5,
-        delay: idx * 0.07,
-        ease: "back.out(1.4)"
-      });
-    }
+    card.innerHTML = `${badge}<span class="prayer-icon">${meta.icon}</span><div class="prayer-name-arabic">${meta.arabic}</div><div class="prayer-name">${meta.label}</div><div class="prayer-time">${data[meta.key] || '–'}</div>`;
+    container.appendChild(card);
+    if (window.gsap) gsap.from(card, { opacity: 0, y: 28, scale: 0.88, duration: 0.55, delay: idx * 0.08, ease: "back.out(1.6)" });
   });
-
   document.getElementById('countdownWrap').style.display = 'block';
 }
 
 function parseTime(timeStr) {
   if (!timeStr) return null;
   const [h, m] = timeStr.split(':').map(Number);
-  const d = new Date();
-  d.setHours(h, m, 0, 0);
-  return d;
+  const d = new Date(); d.setHours(h, m, 0, 0); return d;
 }
 
 // ═══════════════════════════════════════════
@@ -541,35 +515,26 @@ function startCountdown() {
 
 function updateCountdown() {
   if (!prayerData) return;
-
-  const now   = new Date();
+  const now = new Date();
   const times = PRAYER_META.map(m => ({ ...m, t: parseTime(prayerData[m.key]) }));
-
   let nextEntry = times.find(t => t.t && t.t > now);
   if (!nextEntry) {
-    // All prayers passed — show Subuh tomorrow
-    nextEntry = times[1]; // fajr
+    nextEntry = times[1];
     nextEntry.t = new Date(nextEntry.t.getTime() + 86400000);
   }
-
   const diff = nextEntry.t - now;
   const totalMs = (() => {
-    // seconds from previous prayer or day start
     const prevTimes = times.filter(t => t.t && t.t <= now);
     if (prevTimes.length === 0) return nextEntry.t - new Date(now.setHours(0,0,0,0));
-    const prev = prevTimes[prevTimes.length - 1];
-    return nextEntry.t - prev.t;
+    return nextEntry.t - prevTimes[prevTimes.length - 1].t;
   })();
-
-  const h  = Math.floor(diff / 3600000);
-  const m  = Math.floor((diff % 3600000) / 60000);
-  const s  = Math.floor((diff % 60000) / 1000);
-
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
   document.getElementById('cdHours').textContent   = String(h).padStart(2,'0');
   document.getElementById('cdMinutes').textContent = String(m).padStart(2,'0');
   document.getElementById('cdSeconds').textContent = String(s).padStart(2,'0');
   document.getElementById('countdownName').textContent = `${nextEntry.arabic}  ${nextEntry.label}`;
-
   const pct = Math.max(0, Math.min(100, 100 - (diff / totalMs) * 100));
   document.getElementById('progressBar').style.width = `${pct}%`;
 }
@@ -580,64 +545,37 @@ function updateCountdown() {
 function initHadith() {
   const track = document.getElementById('hadithTrack');
   const dots  = document.getElementById('hadithDots');
-
   HADITHS.forEach((h, i) => {
     const card = document.createElement('div');
     card.className = 'hadith-card glass-card' + (i === 0 ? ' active' : '');
-    card.innerHTML = `
-      <p class="hadith-arabic">"${h.arabic}"</p>
-      <div class="hadith-divider"></div>
-      <p class="hadith-malay">${h.malay}</p>
-      <span class="hadith-source">${h.source}</span>
-    `;
+    card.innerHTML = `<p class="hadith-arabic">"${h.arabic}"</p><div class="hadith-divider"></div><p class="hadith-malay">${h.malay}</p><span class="hadith-source">${h.source}</span>`;
     track.appendChild(card);
-
     const dot = document.createElement('div');
     dot.className = 'hadith-dot' + (i === 0 ? ' active' : '');
     dot.addEventListener('click', () => showHadith(i));
     dots.appendChild(dot);
   });
-
-  document.getElementById('hadithPrev').addEventListener('click', () => {
-    showHadith((currentHadithIndex - 1 + HADITHS.length) % HADITHS.length, 'right');
-  });
-  document.getElementById('hadithNext').addEventListener('click', () => {
-    showHadith((currentHadithIndex + 1) % HADITHS.length, 'left');
-  });
-
-  // Auto-advance every 8s
-  setInterval(() => {
-    showHadith((currentHadithIndex + 1) % HADITHS.length, 'left');
-  }, 8000);
-
-  // Touch swipe
+  document.getElementById('hadithPrev').addEventListener('click', () => showHadith((currentHadithIndex - 1 + HADITHS.length) % HADITHS.length, 'right'));
+  document.getElementById('hadithNext').addEventListener('click', () => showHadith((currentHadithIndex + 1) % HADITHS.length, 'left'));
+  setInterval(() => showHadith((currentHadithIndex + 1) % HADITHS.length, 'left'), 8000);
   const section = document.getElementById('hadith');
   section.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
   section.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 50) {
-      showHadith((currentHadithIndex + (dx < 0 ? 1 : -1) + HADITHS.length) % HADITHS.length, dx < 0 ? 'left' : 'right');
-    }
+    if (Math.abs(dx) > 50) showHadith((currentHadithIndex + (dx < 0 ? 1 : -1) + HADITHS.length) % HADITHS.length, dx < 0 ? 'left' : 'right');
   });
 }
 
 function showHadith(idx, dir = 'left') {
   const cards = document.querySelectorAll('.hadith-card');
   const dots  = document.querySelectorAll('.hadith-dot');
-
   cards[currentHadithIndex].classList.remove('active');
   cards[currentHadithIndex].classList.add(dir === 'left' ? 'exit-left' : '');
   setTimeout(() => cards[currentHadithIndex].classList.remove('exit-left'), 600);
-
   dots[currentHadithIndex].classList.remove('active');
   currentHadithIndex = idx;
-
   cards[currentHadithIndex].style.transform = dir === 'left' ? 'translateX(60px)' : 'translateX(-60px)';
-  setTimeout(() => {
-    cards[currentHadithIndex].style.transform = '';
-    cards[currentHadithIndex].classList.add('active');
-  }, 20);
-
+  setTimeout(() => { cards[currentHadithIndex].style.transform = ''; cards[currentHadithIndex].classList.add('active'); }, 20);
   dots[currentHadithIndex].classList.add('active');
 }
 
@@ -646,20 +584,12 @@ function showHadith(idx, dir = 'left') {
 // ═══════════════════════════════════════════
 function isSchoolHoliday(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
-  return SCHOOL_HOLIDAY_RANGES.some(r => {
-    const s = new Date(r.start + 'T00:00:00');
-    const e = new Date(r.end   + 'T00:00:00');
-    return d >= s && d <= e;
-  });
+  return SCHOOL_HOLIDAY_RANGES.some(r => d >= new Date(r.start + 'T00:00:00') && d <= new Date(r.end + 'T00:00:00'));
 }
 
 function getSchoolHolidayName(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
-  const r = SCHOOL_HOLIDAY_RANGES.find(r => {
-    const s = new Date(r.start + 'T00:00:00');
-    const e = new Date(r.end   + 'T00:00:00');
-    return d >= s && d <= e;
-  });
+  const r = SCHOOL_HOLIDAY_RANGES.find(r => d >= new Date(r.start + 'T00:00:00') && d <= new Date(r.end + 'T00:00:00'));
   return r ? r.name : '';
 }
 
@@ -667,74 +597,45 @@ function pad2(n) { return String(n).padStart(2,'0'); }
 
 function renderCalendar(year, month, direction) {
   const body  = document.getElementById('calBody');
-  const mName = document.getElementById('calMonthName');
-  const hName = document.getElementById('calHijriMonth');
-
-  mName.textContent = `${MALAY_MONTHS[month]} ${year}`;
-  hName.textContent = hijriMonthName(year, month);
-
-  // Remove existing days (keep grid structure)
+  document.getElementById('calMonthName').textContent = `${MALAY_MONTHS[month]} ${year}`;
+  document.getElementById('calHijriMonth').textContent = hijriMonthName(year, month);
   body.innerHTML = '';
-
-  // Animate
   if (direction) {
     body.classList.remove('slide-left', 'slide-right');
     void body.offsetWidth;
     body.classList.add(direction === 'next' ? 'slide-left' : 'slide-right');
   }
-
-  const today      = new Date();
-  const firstDay   = new Date(year, month, 1).getDay(); // 0=Sun
+  const today = new Date();
+  const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const prevDays   = new Date(year, month, 0).getDate();
-
-  // Blank cells before month start
+  const prevDays = new Date(year, month, 0).getDate();
   for (let i = 0; i < firstDay; i++) {
-    const day  = prevDays - firstDay + i + 1;
     const cell = document.createElement('div');
     cell.className = 'cal-day other-month empty';
-    cell.innerHTML = `<span class="day-num">${day}</span>`;
+    cell.innerHTML = `<span class="day-num">${prevDays - firstDay + i + 1}</span>`;
     body.appendChild(cell);
   }
-
-  // Days of month
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${pad2(month+1)}-${pad2(d)}`;
     const dateObj = new Date(year, month, d);
-    const isToday = (dateObj.toDateString() === today.toDateString());
-    const isFri   = (dateObj.getDay() === 5);
+    const isToday = dateObj.toDateString() === today.toDateString();
+    const isFri   = dateObj.getDay() === 5;
     const holiday = PUBLIC_HOLIDAYS[dateStr];
     const school  = isSchoolHoliday(dateStr);
-
     const cell = document.createElement('div');
     let cls = 'cal-day';
-    if (isToday)  cls += ' today';
-    if (isFri)    cls += ' friday';
-    if (holiday)  cls += ' holiday';
+    if (isToday) cls += ' today';
+    if (isFri)   cls += ' friday';
+    if (holiday) cls += holiday.state ? ' state-holiday' : ' holiday';
     else if (school) cls += ' school';
     cell.className = cls;
-
     const hDay = hijriDay(dateObj);
-    const dotHTML = holiday
-      ? '<span class="day-dot"></span>'
-      : school
-        ? '<span class="day-dot school"></span>'
-        : '';
-
-    cell.innerHTML = `
-      <span class="day-num">${d}</span>
-      <span class="day-hijri">${hDay}</span>
-      ${dotHTML}
-    `;
-
-    if (holiday || school) {
-      cell.addEventListener('click', () => showHolidayPopup(dateStr, d, holiday, school));
-    }
-
+    const dotHTML = holiday ? '<span class="day-dot"></span>' : school ? '<span class="day-dot school"></span>' : '';
+    const labelHTML = holiday ? `<span class="day-holiday-label">${holiday.name}</span>` : school ? `<span class="day-holiday-label">${getSchoolHolidayName(dateStr)}</span>` : '';
+    cell.innerHTML = `<span class="day-num">${d}</span><span class="day-hijri">${hDay}</span>${dotHTML}${labelHTML}`;
+    if (holiday || school) cell.addEventListener('click', () => showHolidayPopup(dateStr, d, holiday, school));
     body.appendChild(cell);
   }
-
-  // Trailing empty cells
   const total = firstDay + daysInMonth;
   const trailing = total % 7 === 0 ? 0 : 7 - (total % 7);
   for (let d = 1; d <= trailing; d++) {
@@ -746,78 +647,46 @@ function renderCalendar(year, month, direction) {
 }
 
 function showHolidayPopup(dateStr, day, holiday, school) {
-  const popup   = document.getElementById('holidayPopup');
-  const content = document.getElementById('popupContent');
-  const [yr, mo, dy] = dateStr.split('-').map(Number);
-  const dateDisp = `${day} ${MALAY_MONTHS[mo-1]} ${yr}`;
-
-  let html = `<span class="popup-date">${dateDisp}</span>`;
+  const [yr, mo] = dateStr.split('-').map(Number);
+  let html = `<span class="popup-date">${day} ${MALAY_MONTHS[mo-1]} ${yr}</span>`;
   if (holiday) html += `<strong class="popup-holiday-name">${holiday.name}</strong>`;
   if (school)  html += `<strong>${getSchoolHolidayName(dateStr)}</strong>`;
-
-  content.innerHTML = html;
-  popup.style.display = 'block';
+  document.getElementById('popupContent').innerHTML = html;
+  document.getElementById('holidayPopup').style.display = 'block';
 }
 
 function initCalendar() {
   renderCalendar(calYear, calMonth, null);
-
   document.getElementById('calPrev').addEventListener('click', () => {
-    if (calMonth === 0) { calMonth = 11; calYear--; }
-    else calMonth--;
+    if (calMonth === 0) { calMonth = 11; calYear--; } else calMonth--;
     renderCalendar(calYear, calMonth, 'prev');
   });
   document.getElementById('calNext').addEventListener('click', () => {
-    if (calMonth === 11) { calMonth = 0; calYear++; }
-    else calMonth++;
+    if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++;
     renderCalendar(calYear, calMonth, 'next');
   });
-
-  // Touch swipe on calendar
   const calWrap = document.querySelector('.calendar-wrapper');
   let calTouchX = 0, calTouchY = 0;
-  calWrap.addEventListener('touchstart', e => {
-    calTouchX = e.touches[0].clientX;
-    calTouchY = e.touches[0].clientY;
-  }, { passive: true });
+  calWrap.addEventListener('touchstart', e => { calTouchX = e.touches[0].clientX; calTouchY = e.touches[0].clientY; }, { passive: true });
   calWrap.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - calTouchX;
     const dy = e.changedTouches[0].clientY - calTouchY;
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
-      if (dx < 0) {
-        if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++;
-        renderCalendar(calYear, calMonth, 'next');
-      } else {
-        if (calMonth === 0) { calMonth = 11; calYear--; } else calMonth--;
-        renderCalendar(calYear, calMonth, 'prev');
-      }
+      if (dx < 0) { if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++; renderCalendar(calYear, calMonth, 'next'); }
+      else        { if (calMonth === 0)  { calMonth = 11; calYear--; } else calMonth--; renderCalendar(calYear, calMonth, 'prev'); }
     }
   });
-
-  document.getElementById('popupClose').addEventListener('click', () => {
-    document.getElementById('holidayPopup').style.display = 'none';
-  });
+  document.getElementById('popupClose').addEventListener('click', () => { document.getElementById('holidayPopup').style.display = 'none'; });
 }
 
 // ═══════════════════════════════════════════
-// NAVBAR SCROLL EFFECT
+// NAVBAR
 // ═══════════════════════════════════════════
 function initNavbar() {
   const navbar = document.getElementById('navbar');
-  window.addEventListener('scroll', () => {
-    navbar.classList.toggle('scrolled', window.scrollY > 50);
-  }, { passive: true });
-
-  document.getElementById('navMenuBtn').addEventListener('click', () => {
-    document.getElementById('navMobile').classList.toggle('open');
-  });
-
-  // Close mobile menu on link click
-  document.querySelectorAll('.nav-mobile .nav-link').forEach(link => {
-    link.addEventListener('click', () => {
-      document.getElementById('navMobile').classList.remove('open');
-    });
-  });
+  window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 50), { passive: true });
+  document.getElementById('navMenuBtn').addEventListener('click', () => document.getElementById('navMobile').classList.toggle('open'));
+  document.querySelectorAll('.nav-mobile .nav-link').forEach(link => link.addEventListener('click', () => document.getElementById('navMobile').classList.remove('open')));
 }
 
 // ═══════════════════════════════════════════
@@ -826,75 +695,27 @@ function initNavbar() {
 function initGSAP() {
   if (!window.gsap || !window.ScrollTrigger) return;
   gsap.registerPlugin(ScrollTrigger);
-
-  // Hero elements entrance
-  gsap.to('#heroDateBlock', {
-    opacity: 1, y: 0, duration: 0.8, delay: 0.3, ease: "power3.out"
-  });
-  gsap.to('.hero-title', {
-    opacity: 1, y: 0, duration: 0.9, delay: 0.55, ease: "power3.out"
-  });
-  gsap.to('.hero-subtitle', {
-    opacity: 1, duration: 0.7, delay: 0.8, ease: "power2.out"
-  });
-  gsap.to('.region-selector', {
-    opacity: 1, y: 0, duration: 0.7, delay: 1, ease: "power3.out"
-  });
-
-  // Orb parallax
-  gsap.to('.orb-1', {
-    y: -60, ease: "none",
-    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 2 }
-  });
-  gsap.to('.orb-2', {
-    y: -40, ease: "none",
-    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1.5 }
-  });
-
-  // Section reveals
+  gsap.to('#heroDateBlock', { opacity: 1, y: 0, duration: 0.8, delay: 0.3, ease: "power3.out" });
+  gsap.to('.hero-title',    { opacity: 1, y: 0, duration: 0.9, delay: 0.55, ease: "power3.out" });
+  gsap.to('.hero-subtitle', { opacity: 1, duration: 0.7, delay: 0.8, ease: "power2.out" });
+  gsap.to('.region-selector', { opacity: 1, y: 0, duration: 0.7, delay: 1, ease: "power3.out" });
+  gsap.to('.orb-1', { y: -60, ease: "none", scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 2 } });
+  gsap.to('.orb-2', { y: -40, ease: "none", scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1.5 } });
   gsap.utils.toArray('.reveal').forEach(el => {
-    gsap.to(el, {
-      opacity: 1, y: 0, duration: 0.8, ease: "power3.out",
-      scrollTrigger: {
-        trigger: el,
-        start: 'top 85%',
-        toggleActions: 'play none none none'
-      }
-    });
+    gsap.to(el, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' } });
   });
-
-  // Hadith section parallax background
-  gsap.to('.hadith-section', {
-    backgroundPositionY: '30%',
-    ease: "none",
-    scrollTrigger: {
-      trigger: '.hadith-section',
-      start: 'top bottom',
-      end: 'bottom top',
-      scrub: true
-    }
-  });
+  gsap.to('.hadith-section', { backgroundPositionY: '30%', ease: "none", scrollTrigger: { trigger: '.hadith-section', start: 'top bottom', end: 'bottom top', scrub: true } });
 }
 
 // ═══════════════════════════════════════════
-// TOAST NOTIFICATION
+// TOAST
 // ═══════════════════════════════════════════
 function showToast(msg) {
   let toast = document.getElementById('toast');
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'toast';
-    Object.assign(toast.style, {
-      position: 'fixed', bottom: '80px', left: '50%',
-      transform: 'translateX(-50%)',
-      background: 'rgba(30,50,90,0.95)',
-      backdropFilter: 'blur(12px)',
-      border: '1px solid rgba(255,255,255,0.12)',
-      color: '#e8f0fe', padding: '12px 24px', borderRadius: '30px',
-      fontSize: '0.88rem', zIndex: '9999', fontFamily: 'Inter,sans-serif',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-      transition: 'opacity 0.3s ease'
-    });
+    Object.assign(toast.style, { position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(30,50,90,0.95)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.12)', color: '#e8f0fe', padding: '12px 24px', borderRadius: '30px', fontSize: '0.88rem', zIndex: '9999', fontFamily: 'Inter,sans-serif', boxShadow: '0 8px 32px rgba(0,0,0,0.4)', transition: 'opacity 0.3s ease' });
     document.body.appendChild(toast);
   }
   toast.textContent = msg;
@@ -914,16 +735,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initCalendar();
   updateClock();
   setInterval(updateClock, 1000);
-
-  // Wait for GSAP to be ready
-  if (window.gsap) {
-    initGSAP();
-  } else {
-    window.addEventListener('load', initGSAP);
-  }
-
-  // Auto-load default zone: KTN02 – Pasir Mas, Kelantan
-  setTimeout(() => {
-    fetchPrayerTimes('KTN02');
-  }, 600);
+  if (window.gsap) initGSAP(); else window.addEventListener('load', initGSAP);
+  setTimeout(() => fetchPrayerTimes('KTN02'), 600);
 });
