@@ -29,8 +29,9 @@ const ZONES = {
     { code: "KDH07", name: "Puncak Gunung Jerai" }
   ],
   "Kelantan": [
-    { code: "KLT01", name: "Kota Bharu, Bachok, Pasir Puteh, Tumpat" },
-    { code: "KLT03", name: "Gua Musang (Ulu Kelantan)" }
+    { code: "KTN01", name: "Kota Bharu, Bachok, Pasir Puteh, Tumpat" },
+    { code: "KTN02", name: "Pasir Mas, Tanah Merah, Machang, Kuala Krai, Jeli" },
+    { code: "KTN03", name: "Gua Musang (Ulu Kelantan)" }
   ],
   "Melaka": [
     { code: "MLK01", name: "Seluruh Melaka" }
@@ -372,10 +373,10 @@ function initRegionSelector() {
     });
   });
 
-  // Load default: WLY01 on page load
-  stateSelect.value = "Wilayah Persekutuan";
+  // Load default: KTN02 (Pasir Mas, Kelantan)
+  stateSelect.value = "Kelantan";
   stateSelect.dispatchEvent(new Event('change'));
-  zoneSelect.value = "WLY01";
+  zoneSelect.value = "KTN02";
 
   document.getElementById('loadPrayerBtn').addEventListener('click', () => {
     const zone = zoneSelect.value;
@@ -389,48 +390,80 @@ function initRegionSelector() {
 
 // ═══════════════════════════════════════════
 // PRAYER TIME API
+// e-solat.gov.my does not send CORS headers
+// that allow requests from github.io origins,
+// so we try the direct URL first (works when
+// served locally or from the same domain) and
+// fall back to the allorigins CORS proxy so
+// the app functions correctly on GitHub Pages.
+// Neither path uses eval() or new Function().
 // ═══════════════════════════════════════════
+const ESOLAT_BASE = 'https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=';
+const CORS_PROXY  = 'https://api.allorigins.win/get?url=';
+
+async function fetchWithFallback(zone) {
+  const apiUrl = ESOLAT_BASE + encodeURIComponent(zone);
+
+  // Attempt 1: direct (works on localhost / same-origin environments)
+  try {
+    const res = await fetch(apiUrl, { mode: 'cors' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data?.prayerTime?.[0]) return data;
+  } catch (_) {
+    // Direct fetch failed — fall through to proxy
+  }
+
+  // Attempt 2: allorigins CORS proxy (works on GitHub Pages)
+  const proxyUrl = CORS_PROXY + encodeURIComponent(apiUrl);
+  const proxyRes = await fetch(proxyUrl);
+  if (!proxyRes.ok) throw new Error('Proxy HTTP ' + proxyRes.status);
+  const proxyData = await proxyRes.json();
+  const inner = JSON.parse(proxyData.contents);
+  if (!inner?.prayerTime?.[0]) throw new Error('No prayer data in proxy response');
+  return inner;
+}
+
 async function fetchPrayerTimes(zone) {
   const loading     = document.getElementById('prayerLoading');
   const placeholder = document.getElementById('prayerPlaceholder');
-  const grid        = document.getElementById('prayerGrid');
 
   placeholder.style.display = 'none';
   loading.style.display = 'flex';
   clearPrayerCards();
 
-  const url = `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zone}`;
-
   try {
-    const res  = await fetch(url, { mode: 'cors' });
-    const data = await res.json();
+    const data = await fetchWithFallback(zone);
+    prayerData = data.prayerTime[0];
+    loading.style.display = 'none';
+    renderPrayerCards(prayerData);
 
-    if (data?.prayerTime?.[0]) {
-      prayerData = data.prayerTime[0];
-      loading.style.display = 'none';
-      renderPrayerCards(prayerData);
-
-      const bearing = data.bearing || '';
-      if (bearing) {
-        const info = document.getElementById('bearingInfo');
-        document.getElementById('bearingText').textContent = `Arah Kiblat: ${bearing}`;
-        info.style.display = 'flex';
-      }
-
-      // Update subtitle
-      const state = document.getElementById('stateSelect').value;
-      const zoneText = document.getElementById('zoneSelect').selectedOptions[0]?.textContent || zone;
-      document.getElementById('solatSubtitle').textContent = `${zoneText}`;
-
-      // Start countdown
-      startCountdown();
-    } else {
-      throw new Error('No data');
+    const bearing = data.bearing || '';
+    if (bearing) {
+      const info = document.getElementById('bearingInfo');
+      document.getElementById('bearingText').textContent = 'Arah Kiblat: ' + bearing;
+      info.style.display = 'flex';
     }
+
+    const zoneText = document.getElementById('zoneSelect').selectedOptions[0]?.textContent || zone;
+    document.getElementById('solatSubtitle').textContent = zoneText;
+
+    startCountdown();
   } catch (err) {
     loading.style.display = 'none';
     placeholder.style.display = 'block';
-    placeholder.innerHTML = `<div class="placeholder-icon">⚠️</div><p>Gagal mendapatkan waktu solat. Sila cuba lagi.<br><small>${err.message}</small></p>`;
+    const icon = document.createElement('div');
+    icon.className = 'placeholder-icon';
+    icon.textContent = '⚠️';
+    const msg = document.createElement('p');
+    msg.textContent = 'Gagal mendapatkan waktu solat. Sila cuba lagi.';
+    const detail = document.createElement('small');
+    detail.textContent = err.message;
+    msg.appendChild(document.createElement('br'));
+    msg.appendChild(detail);
+    placeholder.innerHTML = '';
+    placeholder.appendChild(icon);
+    placeholder.appendChild(msg);
   }
 }
 
@@ -889,8 +922,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('load', initGSAP);
   }
 
-  // Auto-load default zone
+  // Auto-load default zone: KTN02 – Pasir Mas, Kelantan
   setTimeout(() => {
-    fetchPrayerTimes('WLY01');
+    fetchPrayerTimes('KTN02');
   }, 600);
 });
