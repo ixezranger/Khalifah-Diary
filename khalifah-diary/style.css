@@ -806,6 +806,16 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   border: 1px solid rgba(244,197,66,0.3);
 }
 .cal-day.holiday .day-num { color: var(--gold); }
+.cal-day.federal {
+  background: rgba(60,207,145,0.1);
+  border: 1px solid rgba(60,207,145,0.3);
+}
+.cal-day.federal .day-num { color: var(--accent2); }
+.cal-day.negeri {
+  background: rgba(244,197,66,0.1);
+  border: 1px solid rgba(244,197,66,0.3);
+}
+.cal-day.negeri .day-num { color: var(--gold); }
 .cal-day.state-holiday {
   background: rgba(46,168,213,0.1);
   border: 1px solid rgba(46,168,213,0.3);
@@ -836,6 +846,8 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   background: var(--gold);
 }
 .day-dot.school { background: var(--accent2); }
+.day-dot.federal { background: var(--accent2); }
+.day-dot.negeri { background: var(--gold); }
 .day-dot.state-h { background: var(--accent); }
 
 .swipe-hint {
@@ -865,6 +877,8 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   border-radius: 50%;
 }
 .legend-dot.holiday { background: var(--gold); }
+.legend-dot.federal { background: var(--accent2); }
+.legend-dot.negeri { background: var(--gold); }
 .legend-dot.state-h { background: var(--accent); }
 .legend-dot.school { background: var(--accent2); }
 .legend-dot.today {

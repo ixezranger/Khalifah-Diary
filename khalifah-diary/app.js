@@ -104,7 +104,7 @@ const ZONES = {
 // ═══════════════════════════════════════════
 const HADITHS = [
   {
-    arabic: "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٓ مَا نَوَى",
+    arabic: "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٓ مَا نَوَى",
     malay: "Sesungguhnya setiap amalan bergantung kepada niat, dan sesungguhnya setiap orang hanya mendapat apa yang diniatkannya.",
     source: "HR Bukhari & Muslim"
   },
@@ -114,42 +114,42 @@ const HADITHS = [
     source: "HR Bukhari"
   },
   {
-    arabic: "لا يُؤْمِنُ أحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ",
+    arabic: "لا يُؤْمِنُ أحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ",
     malay: "Tidak beriman salah seorang dari kalian sehingga ia mencintai saudaranya sebagaimana ia mencintai dirinya sendiri.",
     source: "HR Bukhari & Muslim"
   },
   {
-    arabic: "مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ",
+    arabic: "مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ",
     malay: "Barangsiapa beriman kepada Allah dan hari akhir, hendaklah ia berkata yang baik atau hendaklah ia diam.",
     source: "HR Bukhari & Muslim"
   },
   {
-    arabic: "الدِّينُ النَّصِيحَةُ",
+    arabic: "الدِّينُ النَّصِيحَةُ",
     malay: "Agama itu adalah nasihat — nasihat kepada Allah, kepada kitab-Nya, kepada rasul-Nya, kepada pemimpin kaum muslimin, dan kepada umat Islam seluruhnya.",
     source: "HR Muslim"
   },
   {
-    arabic: "مَنْ صَامَ رَمَضَانَ إِيمَانًا وَاحْتِسَابًا غُفِرَ لَهُ مَا تَقَدَّمَ مِنْ ذَنْبِهِ",
+    arabic: "مَنْ صَامَ رَمَضَانَ إِيمَانًا وَاحْتِسَابًا غُفِرَ لَهُ مَا تَقَدَّمَ مِنْ ذَنْبِهِ",
     malay: "Barangsiapa yang berpuasa pada bulan Ramadan dengan penuh keimanan dan mengharap pahala, maka akan diampunkan baginya dosa-dosanya yang telah lalu.",
     source: "HR Bukhari & Muslim"
   },
   {
-    arabic: "أَفْضَلُ الصِّيَامِ بَعْدَ رَمَضَانَ شَهْرُ اللَّهِ الْمُحَرَّمُ",
+    arabic: "أَفْضَلُ الصِّيَامِ بَعْدَ رَمَضَانَ شَهْرُ اللَّهِ الْمُحَرَّمُ",
     malay: "Puasa yang paling utama selepas Ramadan adalah puasa pada bulan Allah — Muharram.",
     source: "HR Muslim"
   },
   {
-    arabic: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ",
+    arabic: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ",
     malay: "Sebaik-baik kalian adalah orang yang mempelajari Al-Quran dan mengajarkannya.",
     source: "HR Bukhari"
   },
   {
-    arabic: "إِنَّ اللَّهَ رَفِيقٌ يُحِبُّ الرِّفْقَ فِي الأَمْرِ كُلِّهِ",
+    arabic: "إِنَّ اللَّهَ رَفِيقٌ يُحِبُّ الرِّفْقَ فِي الأَمْرِ كُلِّهِ",
     malay: "Sesungguhnya Allah itu lemah lembut dan menyukai kelembutan dalam segala hal.",
     source: "HR Bukhari & Muslim"
   },
   {
-    arabic: "مَا مِنْ أَيَّامٓ الْعَمَلُ الصَّالِحُ فِيهَا أَحَبُّ إِلَى اللَّهِ مِنْ هَذِهِ الأَيَّامِ",
+    arabic: "مَا مِنْ أَيَّامٓ الْعَمَلُ الصَّالِحُ فِيهَا أَحَبُّ إِلَى اللَّهِ مِنْ هَذِهِ الأَيَّامِ",
     malay: "Tidak ada hari-hari di mana amalan soleh lebih dicintai Allah melebihi hari-hari ini (sepuluh hari pertama Zulhijjah).",
     source: "HR Bukhari"
   }
@@ -182,30 +182,26 @@ const PUBLIC_HOLIDAYS = {
   "2025-10-20": { name: "Deepavali", type: "holiday" },
   "2025-11-11": { name: "Hari Keputeraan Sultan Kelantan", type: "holiday", state: "Kelantan" },
   "2025-12-25": { name: "Hari Krismas", type: "holiday" },
-  // ── Cuti Umum Nasional 2026 ──
-  "2026-01-01": { name: "Tahun Baru 2026", type: "holiday" },
-  "2026-01-17": { name: "Tahun Baru Cina 2026", type: "holiday" },
-  "2026-01-18": { name: "Tahun Baru Cina (Hari 2)", type: "holiday" },
-  "2026-01-19": { name: "Tahun Baru Cina (Hari Ganti)", type: "holiday" },
-  "2026-02-01": { name: "Hari Wilayah Persekutuan", type: "holiday" },
-  "2026-02-02": { name: "Thaipusam", type: "holiday" },
-  "2026-03-18": { name: "Israk dan Mikraj", type: "holiday" },
-  "2026-03-19": { name: "Awal Ramadan 1447", type: "holiday" },
-  "2026-04-03": { name: "Good Friday (Sabah/Sarawak)", type: "holiday" },
-  "2026-04-04": { name: "Nuzul Al-Quran", type: "holiday", state: "Kelantan" },
-  "2026-04-17": { name: "Hari Raya Aidilfitri", type: "holiday" },
-  "2026-04-18": { name: "Hari Raya Aidilfitri (Hari 2)", type: "holiday" },
-  "2026-05-01": { name: "Hari Pekerja", type: "holiday" },
-  "2026-05-19": { name: "Hari Wesak", type: "holiday" },
-  "2026-06-01": { name: "Hari Keputeraan Yang di-Pertuan Agong", type: "holiday" },
-  "2026-06-23": { name: "Hari Raya Aidiladha", type: "holiday" },
-  "2026-07-14": { name: "Awal Muharram (Maal Hijrah)", type: "holiday" },
-  "2026-08-31": { name: "Hari Kebangsaan", type: "holiday" },
-  "2026-09-16": { name: "Hari Malaysia", type: "holiday" },
-  "2026-09-22": { name: "Maulidur Rasul", type: "holiday" },
-  "2026-10-29": { name: "Deepavali", type: "holiday" },
-  "2026-11-11": { name: "Hari Keputeraan Sultan Kelantan", type: "holiday", state: "Kelantan" },
-  "2026-12-25": { name: "Hari Krismas", type: "holiday" }
+  // ── Cuti Umum 2026 – JPM (Kelantan) ──
+  "2026-01-17": { name: "Israk dan Mikraj", type: "N" },
+  "2026-02-17": { name: "Tahun Baharu Cina", type: "P" },
+  "2026-02-18": { name: "Tahun Baharu Cina (Hari Kedua)", type: "P" },
+  "2026-03-07": { name: "Hari Nuzul Al-Quran", type: "N" },
+  "2026-03-21": { name: "Hari Raya Puasa", type: "P" },
+  "2026-03-22": { name: "Hari Raya Puasa (Hari Kedua)", type: "P" },
+  "2026-05-01": { name: "Hari Pekerja", type: "P" },
+  "2026-05-26": { name: "Hari Arafah", type: "N" },
+  "2026-05-27": { name: "Hari Raya Qurban", type: "P" },
+  "2026-05-31": { name: "Hari Wesak", type: "P" },
+  "2026-06-01": { name: "Hari Keputeraan YDP Agong", type: "P" },
+  "2026-06-17": { name: "Awal Muharam (Maal Hijrah)", type: "P" },
+  "2026-08-25": { name: "Maulidur Rasul", type: "P" },
+  "2026-08-31": { name: "Hari Kebangsaan", type: "P" },
+  "2026-09-16": { name: "Hari Malaysia", type: "P" },
+  "2026-09-29": { name: "Hari Keputeraan Sultan Kelantan", type: "N" },
+  "2026-09-30": { name: "Hari Keputeraan Sultan Kelantan (Hari Kedua)", type: "N" },
+  "2026-11-08": { name: "Hari Deepavali", type: "P" },
+  "2026-12-25": { name: "Hari Krismas", type: "P" }
 };
 
 // School holidays 2025 (Semenanjung Malaysia — approximate)
@@ -637,11 +633,18 @@ function renderCalendar(year, month, direction) {
     let cls = 'cal-day';
     if (isToday) cls += ' today';
     if (isFri)   cls += ' friday';
-    if (holiday) cls += holiday.state ? ' state-holiday' : ' holiday';
-    else if (school) cls += ' school';
+    if (holiday) {
+      if (holiday.type === 'P') cls += ' federal';
+      else if (holiday.type === 'N') cls += ' negeri';
+      else if (holiday.state) cls += ' state-holiday';
+      else cls += ' holiday';
+    } else if (school) cls += ' school';
     cell.className = cls;
     const hDay = hijriDay(dateObj);
-    const dotHTML = holiday ? (holiday.state ? '<span class="day-dot state-h"></span>' : '<span class="day-dot"></span>') : school ? '<span class="day-dot school"></span>' : '';
+    const dotCls = holiday
+      ? (holiday.type === 'P' ? 'federal' : holiday.type === 'N' ? 'negeri' : holiday.state ? 'state-h' : '')
+      : '';
+    const dotHTML = holiday ? `<span class="day-dot${dotCls ? ' ' + dotCls : ''}"></span>` : school ? '<span class="day-dot school"></span>' : '';
     const tooltip = holiday ? holiday.name : school ? getSchoolHolidayName(dateStr) : '';
     if (tooltip) cell.title = tooltip;
     cell.innerHTML = `<span class="day-num">${d}</span><span class="day-hijri">${hDay}</span>${dotHTML}`;
