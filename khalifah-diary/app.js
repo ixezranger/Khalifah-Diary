@@ -159,6 +159,7 @@ const HADITHS = [
 // DATA: PUBLIC HOLIDAYS MALAYSIA 2025–2026
 // ═══════════════════════════════════════════
 const PUBLIC_HOLIDAYS = {
+  // ── Cuti Umum Nasional 2025 ──
   "2025-01-01": { name: "Tahun Baru", type: "holiday" },
   "2025-01-29": { name: "Tahun Baru Cina", type: "holiday" },
   "2025-01-30": { name: "Tahun Baru Cina (Hari 2)", type: "holiday" },
@@ -167,6 +168,7 @@ const PUBLIC_HOLIDAYS = {
   "2025-03-29": { name: "Israk dan Mikraj", type: "holiday" },
   "2025-03-30": { name: "Awal Ramadan", type: "holiday" },
   "2025-03-31": { name: "Good Friday (Sabah/Sarawak)", type: "holiday" },
+  "2025-04-14": { name: "Nuzul Al-Quran", type: "holiday", state: "Kelantan" },
   "2025-04-29": { name: "Hari Raya Aidilfitri", type: "holiday" },
   "2025-04-30": { name: "Hari Raya Aidilfitri (Hari 2)", type: "holiday" },
   "2025-05-01": { name: "Hari Pekerja", type: "holiday" },
@@ -178,16 +180,20 @@ const PUBLIC_HOLIDAYS = {
   "2025-09-16": { name: "Hari Malaysia", type: "holiday" },
   "2025-10-03": { name: "Maulidur Rasul", type: "holiday" },
   "2025-10-20": { name: "Deepavali", type: "holiday" },
+  "2025-11-11": { name: "Hari Keputeraan Sultan Kelantan", type: "holiday", state: "Kelantan" },
   "2025-12-25": { name: "Hari Krismas", type: "holiday" },
+  // ── Cuti Umum Nasional 2026 ──
   "2026-01-01": { name: "Tahun Baru 2026", type: "holiday" },
   "2026-01-17": { name: "Tahun Baru Cina 2026", type: "holiday" },
   "2026-01-18": { name: "Tahun Baru Cina (Hari 2) 2026", type: "holiday" },
   "2026-02-01": { name: "Hari Wilayah Persekutuan", type: "holiday" },
+  "2026-03-04": { name: "Nuzul Al-Quran 2026", type: "holiday", state: "Kelantan" },
   "2026-03-19": { name: "Israk dan Mikraj 2026", type: "holiday" },
   "2026-04-03": { name: "Good Friday 2026", type: "holiday" },
   "2026-05-01": { name: "Hari Pekerja", type: "holiday" },
   "2026-08-31": { name: "Hari Kebangsaan", type: "holiday" },
   "2026-09-16": { name: "Hari Malaysia", type: "holiday" },
+  "2026-11-11": { name: "Hari Keputeraan Sultan Kelantan", type: "holiday", state: "Kelantan" },
   "2026-12-25": { name: "Hari Krismas", type: "holiday" }
 };
 
@@ -314,30 +320,86 @@ function initStars() {
   const canvas = document.getElementById('starsCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
+  const hero = document.getElementById('hero');
 
   let stars = [];
+  const mouse = { x: -999, y: -999 };
+  const REPEL = 130, SPRING = 0.04, DAMP = 0.88, LINE = 80;
+
   const resize = () => {
     canvas.width  = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
-    stars = Array.from({ length: 160 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 1.2 + 0.2,
-      alpha: Math.random(),
-      speed: Math.random() * 0.004 + 0.001
-    }));
+    stars = Array.from({ length: 160 }, () => {
+      const ox = Math.random() * canvas.width;
+      const oy = Math.random() * canvas.height;
+      return {
+        ox, oy, x: ox, y: oy, vx: 0, vy: 0,
+        r: Math.random() * 1.2 + 0.2,
+        alpha: Math.random(),
+        phase: Math.random() * Math.PI * 2,
+        speed: Math.random() * 0.018 + 0.006
+      };
+    });
   };
+
+  hero.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+  }, { passive: true });
+  hero.addEventListener('mouseleave', () => { mouse.x = -999; mouse.y = -999; }, { passive: true });
 
   const draw = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     stars.forEach(s => {
-      s.alpha += s.speed;
-      if (s.alpha > 1 || s.alpha < 0) s.speed *= -1;
+      s.phase += s.speed;
+      s.alpha = 0.25 + 0.75 * (0.5 + 0.5 * Math.sin(s.phase));
+
+      const dx = s.x - mouse.x;
+      const dy = s.y - mouse.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < REPEL * REPEL && d2 > 0) {
+        const d = Math.sqrt(d2);
+        const f = (REPEL - d) / REPEL;
+        s.vx += (dx / d) * f * 2.8;
+        s.vy += (dy / d) * f * 2.8;
+      }
+
+      s.vx += (s.ox - s.x) * SPRING;
+      s.vy += (s.oy - s.y) * SPRING;
+      s.vx *= DAMP;
+      s.vy *= DAMP;
+      s.x  += s.vx;
+      s.y  += s.vy;
+    });
+
+    // Connection lines (O(n²) with early dist² guard)
+    const LINE2 = LINE * LINE;
+    for (let i = 0; i < stars.length - 1; i++) {
+      for (let j = i + 1; j < stars.length; j++) {
+        const dx = stars[i].x - stars[j].x;
+        const dy = stars[i].y - stars[j].y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < LINE2) {
+          const a = (1 - Math.sqrt(d2) / LINE) * 0.13;
+          ctx.beginPath();
+          ctx.moveTo(stars[i].x, stars[i].y);
+          ctx.lineTo(stars[j].x, stars[j].y);
+          ctx.strokeStyle = `rgba(180,210,255,${a})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+
+    stars.forEach(s => {
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(200,220,255,${s.alpha})`;
       ctx.fill();
     });
+
     requestAnimationFrame(draw);
   };
 
@@ -468,19 +530,15 @@ async function fetchPrayerTimes(zone) {
 }
 
 function clearPrayerCards() {
-  const grid = document.getElementById('prayerGrid');
-  // Remove prayer cards but keep loading / placeholder
-  grid.querySelectorAll('.prayer-card').forEach(c => c.remove());
+  document.getElementById('prayerCards').innerHTML = '';
 }
 
 function renderPrayerCards(data) {
-  const grid = document.getElementById('prayerGrid');
-  const now  = new Date();
+  const container = document.getElementById('prayerCards');
+  const now = new Date();
 
-  // Find current / next prayer
   const times = PRAYER_META.map(m => ({
     ...m,
-    timeStr: data[m.key],
     timeDate: parseTime(data[m.key])
   }));
 
@@ -504,17 +562,13 @@ function renderPrayerCards(data) {
       <div class="prayer-time">${data[meta.key] || '–'}</div>
     `;
 
-    grid.appendChild(card);
+    container.appendChild(card);
 
-    // GSAP entrance
     if (window.gsap) {
       gsap.from(card, {
-        opacity: 0,
-        y: 30,
-        scale: 0.9,
-        duration: 0.5,
-        delay: idx * 0.07,
-        ease: "back.out(1.4)"
+        opacity: 0, y: 28, scale: 0.88,
+        duration: 0.55, delay: idx * 0.08,
+        ease: "back.out(1.6)"
       });
     }
   });
@@ -710,7 +764,7 @@ function renderCalendar(year, month, direction) {
     let cls = 'cal-day';
     if (isToday)  cls += ' today';
     if (isFri)    cls += ' friday';
-    if (holiday)  cls += ' holiday';
+    if (holiday)  cls += holiday.state ? ' state-holiday' : ' holiday';
     else if (school) cls += ' school';
     cell.className = cls;
 
@@ -721,10 +775,17 @@ function renderCalendar(year, month, direction) {
         ? '<span class="day-dot school"></span>'
         : '';
 
+    const labelHTML = holiday
+      ? `<span class="day-holiday-label">${holiday.name}</span>`
+      : school
+        ? `<span class="day-holiday-label">${getSchoolHolidayName(dateStr)}</span>`
+        : '';
+
     cell.innerHTML = `
       <span class="day-num">${d}</span>
       <span class="day-hijri">${hDay}</span>
       ${dotHTML}
+      ${labelHTML}
     `;
 
     if (holiday || school) {
