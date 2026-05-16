@@ -156,55 +156,144 @@ const HADITHS = [
 ];
 
 // ═══════════════════════════════════════════
-// DATA: PUBLIC HOLIDAYS MALAYSIA 2025–2026
+// DATA: PUBLIC HOLIDAYS MALAYSIA 2026
+// source: JPM / official gazette
 // ═══════════════════════════════════════════
-const PUBLIC_HOLIDAYS = {
-  // ── Cuti Umum Nasional 2025 ──
-  "2025-01-01": { name: "Tahun Baru", type: "holiday" },
-  "2025-01-29": { name: "Tahun Baru Cina", type: "holiday" },
-  "2025-01-30": { name: "Tahun Baru Cina (Hari 2)", type: "holiday" },
-  "2025-02-01": { name: "Hari Wilayah Persekutuan", type: "holiday" },
-  "2025-02-11": { name: "Thaipusam", type: "holiday" },
-  "2025-03-29": { name: "Israk dan Mikraj", type: "holiday" },
-  "2025-03-30": { name: "Awal Ramadan", type: "holiday" },
-  "2025-03-31": { name: "Good Friday (Sabah/Sarawak)", type: "holiday" },
-  "2025-04-14": { name: "Nuzul Al-Quran", type: "holiday", state: "Kelantan" },
-  "2025-04-29": { name: "Hari Raya Aidilfitri", type: "holiday" },
-  "2025-04-30": { name: "Hari Raya Aidilfitri (Hari 2)", type: "holiday" },
-  "2025-05-01": { name: "Hari Pekerja", type: "holiday" },
-  "2025-05-12": { name: "Hari Wesak", type: "holiday" },
-  "2025-06-02": { name: "Hari Keputeraan Yang di-Pertuan Agong", type: "holiday" },
-  "2025-06-06": { name: "Hari Raya Aidiladha", type: "holiday" },
-  "2025-06-27": { name: "Awal Muharram (Maal Hijrah)", type: "holiday" },
-  "2025-08-31": { name: "Hari Kebangsaan", type: "holiday" },
-  "2025-09-16": { name: "Hari Malaysia", type: "holiday" },
-  "2025-10-03": { name: "Maulidur Rasul", type: "holiday" },
-  "2025-10-20": { name: "Deepavali", type: "holiday" },
-  "2025-11-11": { name: "Hari Keputeraan Sultan Kelantan", type: "holiday", state: "Kelantan" },
-  "2025-12-25": { name: "Hari Krismas", type: "holiday" },
-  // ── Cuti Umum Nasional 2026 ──
-  "2026-01-01": { name: "Tahun Baru 2026", type: "holiday" },
-  "2026-01-17": { name: "Tahun Baru Cina 2026", type: "holiday" },
-  "2026-01-18": { name: "Tahun Baru Cina (Hari 2) 2026", type: "holiday" },
-  "2026-02-01": { name: "Hari Wilayah Persekutuan", type: "holiday" },
-  "2026-03-04": { name: "Nuzul Al-Quran 2026", type: "holiday", state: "Kelantan" },
-  "2026-03-19": { name: "Israk dan Mikraj 2026", type: "holiday" },
-  "2026-04-03": { name: "Good Friday 2026", type: "holiday" },
-  "2026-05-01": { name: "Hari Pekerja", type: "holiday" },
-  "2026-08-31": { name: "Hari Kebangsaan", type: "holiday" },
-  "2026-09-16": { name: "Hari Malaysia", type: "holiday" },
-  "2026-11-11": { name: "Hari Keputeraan Sultan Kelantan", type: "holiday", state: "Kelantan" },
-  "2026-12-25": { name: "Hari Krismas", type: "holiday" }
+const publicHolidays2026 = {
+  // Applies to ALL states
+  national: [
+    { date: "2026-02-17", name: "Tahun Baharu Cina" },
+    { date: "2026-02-18", name: "Tahun Baharu Cina (Hari Kedua)" },
+    { date: "2026-03-21", name: "Hari Raya Puasa" },
+    { date: "2026-03-22", name: "Hari Raya Puasa (Hari Kedua)" },
+    { date: "2026-05-01", name: "Hari Pekerja" },
+    { date: "2026-05-27", name: "Hari Raya Qurban" },
+    { date: "2026-05-28", name: "Hari Raya Qurban (Hari Kedua)" },
+    { date: "2026-05-31", name: "Hari Wesak" },
+    { date: "2026-06-01", name: "Hari Keputeraan YDP Agong" },
+    { date: "2026-06-17", name: "Awal Muharam (Maal Hijrah)" },
+    { date: "2026-08-25", name: "Maulidur Rasul" },
+    { date: "2026-08-31", name: "Hari Kebangsaan" },
+    { date: "2026-09-16", name: "Hari Malaysia" },
+    { date: "2026-11-08", name: "Hari Deepavali" },
+    { date: "2026-12-25", name: "Hari Krismas" },
+  ],
+  // Keyed by state name – shown only for matching zone
+  state: {
+    "Wilayah Persekutuan": [
+      { date: "2026-01-01", name: "Tahun Baharu" },
+      { date: "2026-02-01", name: "Hari Wilayah Persekutuan" },
+      { date: "2026-02-01", name: "Hari Thaipusam" },
+      { date: "2026-03-07", name: "Hari Nuzul Al-Quran" },
+    ],
+    "Johor": [
+      { date: "2026-02-19", name: "Awal Ramadan" },
+      { date: "2026-03-23", name: "Hari Keputeraan Sultan Johor" },
+      { date: "2026-07-21", name: "Hari Hol Almarhum Sultan Iskandar" },
+    ],
+    "Kedah": [
+      { date: "2026-01-01", name: "Tahun Baharu" },
+      { date: "2026-02-01", name: "Hari Thaipusam" },
+      { date: "2026-02-19", name: "Awal Ramadan" },
+      { date: "2026-05-28", name: "Hari Raya Qurban (Hari Kedua)" },
+      { date: "2026-06-21", name: "Hari Keputeraan Sultan Kedah" },
+    ],
+    "Kelantan": [
+      { date: "2026-01-17", name: "Israk dan Mikraj" },
+      { date: "2026-03-07", name: "Hari Nuzul Al-Quran" },
+      { date: "2026-05-26", name: "Hari Arafah" },
+      { date: "2026-09-29", name: "Hari Keputeraan Sultan Kelantan" },
+      { date: "2026-09-30", name: "Hari Keputeraan Sultan Kelantan (Hari Kedua)" },
+    ],
+    "Melaka": [
+      { date: "2026-01-01", name: "Tahun Baharu" },
+      { date: "2026-02-01", name: "Hari Thaipusam" },
+      { date: "2026-02-20", name: "Hari Pengisytiharan Tarikh Kemerdekaan" },
+      { date: "2026-03-23", name: "Hari Raya Puasa (Hari Ketiga)" },
+      { date: "2026-08-24", name: "Hari Jadi Yang di-Pertua Negeri Melaka" },
+    ],
+    "Negeri Sembilan": [
+      { date: "2026-01-01", name: "Tahun Baharu" },
+      { date: "2026-01-14", name: "Hari Keputeraan YDP Besar N. Sembilan" },
+      { date: "2026-01-17", name: "Israk dan Mikraj" },
+      { date: "2026-02-01", name: "Hari Thaipusam" },
+    ],
+    "Pahang": [
+      { date: "2026-01-01", name: "Tahun Baharu" },
+      { date: "2026-05-22", name: "Hari Hol Almarhum Sultan Ahmad Shah" },
+      { date: "2026-07-31", name: "Hari Keputeraan Sultan Pahang" },
+    ],
+    "Pulau Pinang": [
+      { date: "2026-01-01", name: "Tahun Baharu" },
+      { date: "2026-02-01", name: "Hari Thaipusam" },
+      { date: "2026-07-07", name: "Hari Ulang Tahun Tapak Warisan Dunia" },
+      { date: "2026-07-11", name: "Hari Jadi Yang di-Pertua Negeri P.Pinang" },
+    ],
+    "Perak": [
+      { date: "2026-01-01", name: "Tahun Baharu" },
+      { date: "2026-02-01", name: "Hari Thaipusam" },
+      { date: "2026-11-06", name: "Hari Keputeraan Sultan Perak" },
+    ],
+    "Perlis": [
+      { date: "2026-01-01", name: "Tahun Baharu" },
+      { date: "2026-01-17", name: "Israk dan Mikraj" },
+      { date: "2026-03-07", name: "Hari Nuzul Al-Quran" },
+      { date: "2026-05-17", name: "Hari Ulang Tahun Keputeraan Raja Perlis" },
+      { date: "2026-05-28", name: "Hari Raya Qurban (Hari Kedua)" },
+    ],
+    "Sabah": [
+      { date: "2026-01-01", name: "Tahun Baharu" },
+      { date: "2026-03-30", name: "Hari Jadi Yang di-Pertua Negeri Sabah" },
+      { date: "2026-04-03", name: "Good Friday" },
+      { date: "2026-05-30", name: "Pesta Kaamatan" },
+      { date: "2026-05-31", name: "Pesta Kaamatan" },
+    ],
+    "Sarawak": [
+      { date: "2026-04-03", name: "Good Friday" },
+      { date: "2026-06-01", name: "Perayaan Hari Gawai Dayak" },
+      { date: "2026-06-02", name: "Perayaan Hari Gawai Dayak" },
+      { date: "2026-07-22", name: "Hari Kemerdekaan Sarawak" },
+      { date: "2026-10-10", name: "Hari Jadi Yang di-Pertua Negeri Sarawak" },
+      { date: "2026-12-24", name: "Christmas Eve" },
+    ],
+    "Selangor": [
+      { date: "2026-01-01", name: "Tahun Baharu" },
+      { date: "2026-02-01", name: "Hari Thaipusam" },
+      { date: "2026-03-07", name: "Hari Nuzul Al-Quran" },
+      { date: "2026-12-11", name: "Hari Keputeraan Sultan Selangor" },
+    ],
+    "Terengganu": [
+      { date: "2026-01-17", name: "Israk dan Mikraj" },
+      { date: "2026-03-04", name: "Hari Ulang Tahun Pertabalan Sultan Terengganu" },
+      { date: "2026-03-07", name: "Hari Nuzul Al-Quran" },
+      { date: "2026-04-26", name: "Hari Keputeraan Sultan Terengganu" },
+      { date: "2026-05-26", name: "Hari Arafah" },
+    ],
+  }
 };
 
-// School holidays 2025 (Semenanjung Malaysia — approximate)
-const SCHOOL_HOLIDAY_RANGES = [
-  { start: "2025-03-15", end: "2025-03-23", name: "Cuti Penggal 1" },
-  { start: "2025-05-31", end: "2025-06-15", name: "Cuti Pertengahan Tahun" },
-  { start: "2025-08-23", end: "2025-08-31", name: "Cuti Penggal 3" },
-  { start: "2025-11-15", end: "2026-01-04", name: "Cuti Akhir Tahun" },
-  { start: "2026-03-14", end: "2026-03-22", name: "Cuti Penggal 1 (2026)" }
-];
+// Maps zone codes to state names for holiday filtering
+const ZONE_TO_STATE = {
+  WLY01: 'Wilayah Persekutuan', WLY02: 'Wilayah Persekutuan',
+  JHR01: 'Johor',   JHR02: 'Johor',   JHR03: 'Johor',   JHR04: 'Johor',
+  KDH01: 'Kedah',   KDH02: 'Kedah',   KDH03: 'Kedah',   KDH04: 'Kedah',
+  KDH05: 'Kedah',   KDH06: 'Kedah',   KDH07: 'Kedah',
+  KTN01: 'Kelantan', KTN02: 'Kelantan', KTN03: 'Kelantan',
+  MLK01: 'Melaka',
+  NGS01: 'Negeri Sembilan', NGS02: 'Negeri Sembilan',
+  PHG01: 'Pahang',  PHG02: 'Pahang',  PHG03: 'Pahang',  PHG04: 'Pahang',
+  PHG05: 'Pahang',  PHG06: 'Pahang',
+  PRK01: 'Perak',   PRK02: 'Perak',   PRK03: 'Perak',   PRK04: 'Perak',
+  PRK05: 'Perak',   PRK06: 'Perak',   PRK07: 'Perak',
+  PLS01: 'Perlis',
+  PNG01: 'Pulau Pinang', PNG02: 'Pulau Pinang',
+  SBH01: 'Sabah',   SBH02: 'Sabah',   SBH03: 'Sabah',   SBH04: 'Sabah',
+  SBH05: 'Sabah',   SBH06: 'Sabah',   SBH07: 'Sabah',   SBH08: 'Sabah',   SBH09: 'Sabah',
+  SWK01: 'Sarawak', SWK02: 'Sarawak', SWK03: 'Sarawak', SWK04: 'Sarawak',
+  SWK05: 'Sarawak', SWK06: 'Sarawak', SWK07: 'Sarawak', SWK08: 'Sarawak', SWK09: 'Sarawak',
+  SGR01: 'Selangor', SGR02: 'Selangor', SGR03: 'Selangor',
+  TRG01: 'Terengganu', TRG02: 'Terengganu', TRG03: 'Terengganu', TRG04: 'Terengganu',
+};
 
 // ═══════════════════════════════════════════
 // DATA: MALAY LOCALISATION
@@ -234,6 +323,7 @@ let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let touchStartX = 0;
 let touchStartY = 0;
+let currentState = '';
 
 // ═══════════════════════════════════════════
 // 12-HOUR TIME FORMAT
@@ -480,6 +570,7 @@ async function fetchWithFallback(zone) {
 }
 
 async function fetchPrayerTimes(zone) {
+  currentState = ZONE_TO_STATE[zone] || '';
   const loading     = document.getElementById('prayerLoading');
   const placeholder = document.getElementById('prayerPlaceholder');
 
@@ -504,6 +595,7 @@ async function fetchPrayerTimes(zone) {
     document.getElementById('solatSubtitle').textContent = zoneText;
 
     startCountdown();
+    renderCalendar(calYear, calMonth, null);
   } catch (err) {
     loading.style.display = 'none';
     placeholder.style.display = 'block';
@@ -640,15 +732,12 @@ function showHadith(idx, dir = 'left') {
 // ═══════════════════════════════════════════
 // CALENDAR MODULE
 // ═══════════════════════════════════════════
-function isSchoolHoliday(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
-  return SCHOOL_HOLIDAY_RANGES.some(r => d >= new Date(r.start + 'T00:00:00') && d <= new Date(r.end + 'T00:00:00'));
-}
-
-function getSchoolHolidayName(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
-  const r = SCHOOL_HOLIDAY_RANGES.find(r => d >= new Date(r.start + 'T00:00:00') && d <= new Date(r.end + 'T00:00:00'));
-  return r ? r.name : '';
+function getHolidaysForDate(dateStr) {
+  const national = publicHolidays2026.national.filter(h => h.date === dateStr);
+  const state = currentState && publicHolidays2026.state[currentState]
+    ? publicHolidays2026.state[currentState].filter(h => h.date === dateStr)
+    : [];
+  return { national, state };
 }
 
 function pad2(n) { return String(n).padStart(2,'0'); }
@@ -676,29 +765,31 @@ function renderCalendar(year, month, direction) {
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${pad2(month+1)}-${pad2(d)}`;
     const dateObj = new Date(year, month, d);
-    const isToday = dateObj.toDateString() === today.toDateString();
-    const isFri   = dateObj.getDay() === 5;
-    const holiday = PUBLIC_HOLIDAYS[dateStr];
-    const school  = isSchoolHoliday(dateStr);
+    const isToday = (dateObj.toDateString() === today.toDateString());
+    const isFri   = (dateObj.getDay() === 5);
+    const { national: natHols, state: stateHols } = getHolidaysForDate(dateStr);
+    const hasNat = natHols.length > 0;
+    const hasSt  = stateHols.length > 0;
+    const hasAny = hasNat || hasSt;
+
     const cell = document.createElement('div');
     let cls = 'cal-day';
-    if (isToday)  cls += ' today';
-    if (isFri)    cls += ' friday';
-    if (holiday)  cls += holiday.state ? ' state-holiday' : ' holiday';
-    else if (school) cls += ' school';
+    if (isToday) cls += ' today';
+    if (isFri)   cls += ' friday';
+    if (hasNat)  cls += ' national-holiday';
+    if (hasSt)   cls += ' state-holiday';
     cell.className = cls;
     const hDay = hijriDay(dateObj);
-    const dotHTML = holiday
-      ? '<span class="day-dot"></span>'
-      : school
-        ? '<span class="day-dot school"></span>'
-        : '';
+    const dots = [
+      hasNat ? '<span class="day-dot national"></span>' : '',
+      hasSt  ? '<span class="day-dot state-h"></span>'  : '',
+    ].join('');
+    const dotHTML = hasAny ? `<div class="day-dots">${dots}</div>` : '';
 
-    const labelHTML = holiday
-      ? `<span class="day-holiday-label">${holiday.name}</span>`
-      : school
-        ? `<span class="day-holiday-label">${getSchoolHolidayName(dateStr)}</span>`
-        : '';
+    const labels = [...natHols.map(h => h.name), ...stateHols.map(h => h.name)];
+    const labelHTML = hasAny
+      ? `<span class="day-holiday-label">${labels[0]}${labels.length > 1 ? ` +${labels.length - 1}` : ''}</span>`
+      : '';
 
     cell.innerHTML = `
       <span class="day-num">${d}</span>
@@ -707,8 +798,8 @@ function renderCalendar(year, month, direction) {
       ${labelHTML}
     `;
 
-    if (holiday || school) {
-      cell.addEventListener('click', () => showHolidayPopup(dateStr, d, holiday, school));
+    if (hasAny) {
+      cell.addEventListener('click', () => showHolidayPopup(dateStr, d, natHols, stateHols));
     }
 
     body.appendChild(cell);
@@ -723,13 +814,22 @@ function renderCalendar(year, month, direction) {
   }
 }
 
-function showHolidayPopup(dateStr, day, holiday, school) {
+function showHolidayPopup(dateStr, day, natHols, stateHols) {
+  const popup   = document.getElementById('holidayPopup');
+  const content = document.getElementById('popupContent');
   const [yr, mo] = dateStr.split('-').map(Number);
-  let html = `<span class="popup-date">${day} ${MALAY_MONTHS[mo-1]} ${yr}</span>`;
-  if (holiday) html += `<strong class="popup-holiday-name">${holiday.name}</strong>`;
-  if (school)  html += `<strong>${getSchoolHolidayName(dateStr)}</strong>`;
-  document.getElementById('popupContent').innerHTML = html;
-  document.getElementById('holidayPopup').style.display = 'block';
+  const dateDisp = `${day} ${MALAY_MONTHS[mo-1]} ${yr}`;
+
+  let html = `<span class="popup-date">${dateDisp}</span>`;
+  natHols.forEach(h => {
+    html += `<strong class="popup-holiday-name national">${h.name}</strong>`;
+  });
+  stateHols.forEach(h => {
+    html += `<strong class="popup-holiday-name state">${h.name}</strong>`;
+  });
+
+  content.innerHTML = html;
+  popup.style.display = 'block';
 }
 
 function initCalendar() {
