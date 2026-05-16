@@ -1,7 +1,7 @@
-/* ════════════════════════════════════════════════════════════
+/* ╔════════════════════════════════════════════════════════════
    Khalifah Diary – app.js
    Prayer Times · Countdown · Hijri Calendar · Hadith · GSAP
-   ════════════════════════════════════════════════════════════ */
+   ╔════════════════════════════════════════════════════════════ */
 
 'use strict';
 
@@ -104,7 +104,7 @@ const ZONES = {
 // ═══════════════════════════════════════════
 const HADITHS = [
   {
-    arabic: "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى",
+    arabic: "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٓ مَا نَوَى",
     malay: "Sesungguhnya setiap amalan bergantung kepada niat, dan sesungguhnya setiap orang hanya mendapat apa yang diniatkannya.",
     source: "HR Bukhari & Muslim"
   },
@@ -114,7 +114,7 @@ const HADITHS = [
     source: "HR Bukhari"
   },
   {
-    arabic: "لا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ",
+    arabic: "لا يُؤْمِنُ أحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ",
     malay: "Tidak beriman salah seorang dari kalian sehingga ia mencintai saudaranya sebagaimana ia mencintai dirinya sendiri.",
     source: "HR Bukhari & Muslim"
   },
@@ -149,7 +149,7 @@ const HADITHS = [
     source: "HR Bukhari & Muslim"
   },
   {
-    arabic: "مَا مِنْ أَيَّامٍ الْعَمَلُ الصَّالِحُ فِيهَا أَحَبُّ إِلَى اللَّهِ مِنْ هَذِهِ الأَيَّامِ",
+    arabic: "مَا مِنْ أَيَّامٓ الْعَمَلُ الصَّالِحُ فِيهَا أَحَبُّ إِلَى اللَّهِ مِنْ هَذِهِ الأَيَّامِ",
     malay: "Tidak ada hari-hari di mana amalan soleh lebih dicintai Allah melebihi hari-hari ini (sepuluh hari pertama Zulhijjah).",
     source: "HR Bukhari"
   }
@@ -251,12 +251,10 @@ function to12Hour(time24) {
 // HIJRI DATE CALCULATION
 // ═══════════════════════════════════════════
 function toHijri(year, month, day) {
-  // Based on the Kuwaiti algorithm
   let jd = Math.floor((1461 * (year + 4800 + Math.floor((month - 14) / 12))) / 4)
     + Math.floor((367 * (month - 2 - 12 * (Math.floor((month - 14) / 12)))) / 12)
     - Math.floor((3 * (Math.floor((year + 4900 + Math.floor((month - 14) / 12)) / 100))) / 4)
     + day - 32075;
-
   let l = jd - 1948440 + 10632;
   let n = Math.floor((l - 1) / 10631);
   l = l - 10631 * n + 354;
@@ -267,13 +265,7 @@ function toHijri(year, month, day) {
   let monthH = Math.floor((24 * l) / 709);
   let dayH   = l - Math.floor((709 * monthH) / 24);
   let yearH  = 30 * n + j - 30;
-
   return { year: yearH, month: monthH, day: dayH };
-}
-
-function hijriString(date) {
-  const h = toHijri(date.getFullYear(), date.getMonth() + 1, date.getDate());
-  return `${h.day} ${HIJRI_MONTHS[h.month - 1]} ${h.year} H`;
 }
 
 function hijriDay(date) {
@@ -282,7 +274,6 @@ function hijriDay(date) {
 }
 
 function hijriMonthName(year, month) {
-  // Return Hijri month name for middle of given Gregorian month
   const mid = new Date(year, month, 15);
   const h = toHijri(mid.getFullYear(), mid.getMonth() + 1, mid.getDate());
   return `${HIJRI_MONTHS[h.month - 1]} ${h.year} H`;
@@ -310,19 +301,12 @@ function updateClock() {
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
   const ss = String(now.getSeconds()).padStart(2, '0');
-
   const clockEl = document.getElementById('heroClock');
   if (clockEl) clockEl.textContent = `${hh}:${mm}:${ss}`;
-
   const masihiEl = document.getElementById('heroMasihi');
-  if (masihiEl) {
-    masihiEl.textContent = `${MALAY_DAYS[now.getDay()]}, ${now.getDate()} ${MALAY_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
-  }
-
+  if (masihiEl) masihiEl.textContent = `${MALAY_DAYS[now.getDay()]}, ${now.getDate()} ${MALAY_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
   const hijriEl = document.getElementById('heroHijri');
-  if (hijriEl) {
-    hijriEl.textContent = arabicHijriString(now);
-  }
+  if (hijriEl) hijriEl.textContent = arabicHijriString(now);
 }
 
 // ═══════════════════════════════════════════
@@ -429,8 +413,7 @@ function initRegionSelector() {
 
   Object.keys(ZONES).forEach(state => {
     const opt = document.createElement('option');
-    opt.value = state;
-    opt.textContent = state;
+    opt.value = state; opt.textContent = state;
     stateSelect.appendChild(opt);
   });
 
@@ -456,9 +439,7 @@ function initRegionSelector() {
     const zone = zoneSelect.value;
     if (!zone) { showToast("Sila pilih zon terlebih dahulu"); return; }
     fetchPrayerTimes(zone);
-    setTimeout(() => {
-      document.getElementById('solat').scrollIntoView({ behavior: 'smooth' });
-    }, 300);
+    setTimeout(() => document.getElementById('solat').scrollIntoView({ behavior: 'smooth' }), 300);
   });
 }
 
@@ -558,13 +539,11 @@ function renderPrayerCards(data) {
   for (let i = 0; i < times.length; i++) {
     if (times[i].timeDate > now) { nextIdx = i; break; }
   }
-
   PRAYER_META.forEach((meta, idx) => {
     const card = document.createElement('div');
     card.className = 'prayer-card';
     if (nextIdx !== -1 && idx === nextIdx) card.classList.add('active');
     if (nextIdx !== -1 && idx < nextIdx) card.classList.add('past');
-
     const badge = idx === nextIdx ? '<div class="prayer-badge">Seterusnya</div>' : '';
     const t12 = to12Hour(data[meta.key]);
     const timeHTML = t12.period ? `${t12.time}<span class="prayer-ampm">${t12.period}</span>` : t12.time;
@@ -577,9 +556,7 @@ function renderPrayerCards(data) {
 function parseTime(timeStr) {
   if (!timeStr) return null;
   const [h, m] = timeStr.split(':').map(Number);
-  const d = new Date();
-  d.setHours(h, m, 0, 0);
-  return d;
+  const d = new Date(); d.setHours(h, m, 0, 0); return d;
 }
 
 // ═══════════════════════════════════════════
@@ -593,30 +570,22 @@ function startCountdown() {
 
 function updateCountdown() {
   if (!prayerData) return;
-
-  const now   = new Date();
+  const now = new Date();
   const times = PRAYER_META.map(m => ({ ...m, t: parseTime(prayerData[m.key]) }));
-
   let nextEntry = times.find(t => t.t && t.t > now);
   if (!nextEntry) {
-    // All prayers passed — show Subuh tomorrow
-    nextEntry = times[1]; // fajr
+    nextEntry = times[1];
     nextEntry.t = new Date(nextEntry.t.getTime() + 86400000);
   }
-
   const diff = nextEntry.t - now;
   const totalMs = (() => {
-    // seconds from previous prayer or day start
     const prevTimes = times.filter(t => t.t && t.t <= now);
     if (prevTimes.length === 0) return nextEntry.t - new Date(now.setHours(0,0,0,0));
-    const prev = prevTimes[prevTimes.length - 1];
-    return nextEntry.t - prev.t;
+    return nextEntry.t - prevTimes[prevTimes.length - 1].t;
   })();
-
-  const h  = Math.floor(diff / 3600000);
-  const m  = Math.floor((diff % 3600000) / 60000);
-  const s  = Math.floor((diff % 60000) / 1000);
-
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
   document.getElementById('cdHours').textContent   = String(h).padStart(2,'0');
   document.getElementById('cdMinutes').textContent = String(m).padStart(2,'0');
   document.getElementById('cdSeconds').textContent = String(s).padStart(2,'0');
@@ -634,64 +603,37 @@ function updateCountdown() {
 function initHadith() {
   const track = document.getElementById('hadithTrack');
   const dots  = document.getElementById('hadithDots');
-
   HADITHS.forEach((h, i) => {
     const card = document.createElement('div');
     card.className = 'hadith-card glass-card' + (i === 0 ? ' active' : '');
-    card.innerHTML = `
-      <p class="hadith-arabic">"${h.arabic}"</p>
-      <div class="hadith-divider"></div>
-      <p class="hadith-malay">${h.malay}</p>
-      <span class="hadith-source">${h.source}</span>
-    `;
+    card.innerHTML = `<p class="hadith-arabic">"${h.arabic}"</p><div class="hadith-divider"></div><p class="hadith-malay">${h.malay}</p><span class="hadith-source">${h.source}</span>`;
     track.appendChild(card);
-
     const dot = document.createElement('div');
     dot.className = 'hadith-dot' + (i === 0 ? ' active' : '');
     dot.addEventListener('click', () => showHadith(i));
     dots.appendChild(dot);
   });
-
-  document.getElementById('hadithPrev').addEventListener('click', () => {
-    showHadith((currentHadithIndex - 1 + HADITHS.length) % HADITHS.length, 'right');
-  });
-  document.getElementById('hadithNext').addEventListener('click', () => {
-    showHadith((currentHadithIndex + 1) % HADITHS.length, 'left');
-  });
-
-  // Auto-advance every 8s
-  setInterval(() => {
-    showHadith((currentHadithIndex + 1) % HADITHS.length, 'left');
-  }, 8000);
-
-  // Touch swipe
+  document.getElementById('hadithPrev').addEventListener('click', () => showHadith((currentHadithIndex - 1 + HADITHS.length) % HADITHS.length, 'right'));
+  document.getElementById('hadithNext').addEventListener('click', () => showHadith((currentHadithIndex + 1) % HADITHS.length, 'left'));
+  setInterval(() => showHadith((currentHadithIndex + 1) % HADITHS.length, 'left'), 8000);
   const section = document.getElementById('hadith');
   section.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
   section.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 50) {
-      showHadith((currentHadithIndex + (dx < 0 ? 1 : -1) + HADITHS.length) % HADITHS.length, dx < 0 ? 'left' : 'right');
-    }
+    if (Math.abs(dx) > 50) showHadith((currentHadithIndex + (dx < 0 ? 1 : -1) + HADITHS.length) % HADITHS.length, dx < 0 ? 'left' : 'right');
   });
 }
 
 function showHadith(idx, dir = 'left') {
   const cards = document.querySelectorAll('.hadith-card');
   const dots  = document.querySelectorAll('.hadith-dot');
-
   cards[currentHadithIndex].classList.remove('active');
   cards[currentHadithIndex].classList.add(dir === 'left' ? 'exit-left' : '');
   setTimeout(() => cards[currentHadithIndex].classList.remove('exit-left'), 600);
-
   dots[currentHadithIndex].classList.remove('active');
   currentHadithIndex = idx;
-
   cards[currentHadithIndex].style.transform = dir === 'left' ? 'translateX(60px)' : 'translateX(-60px)';
-  setTimeout(() => {
-    cards[currentHadithIndex].style.transform = '';
-    cards[currentHadithIndex].classList.add('active');
-  }, 20);
-
+  setTimeout(() => { cards[currentHadithIndex].style.transform = ''; cards[currentHadithIndex].classList.add('active'); }, 20);
   dots[currentHadithIndex].classList.add('active');
 }
 
@@ -700,20 +642,12 @@ function showHadith(idx, dir = 'left') {
 // ═══════════════════════════════════════════
 function isSchoolHoliday(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
-  return SCHOOL_HOLIDAY_RANGES.some(r => {
-    const s = new Date(r.start + 'T00:00:00');
-    const e = new Date(r.end   + 'T00:00:00');
-    return d >= s && d <= e;
-  });
+  return SCHOOL_HOLIDAY_RANGES.some(r => d >= new Date(r.start + 'T00:00:00') && d <= new Date(r.end + 'T00:00:00'));
 }
 
 function getSchoolHolidayName(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
-  const r = SCHOOL_HOLIDAY_RANGES.find(r => {
-    const s = new Date(r.start + 'T00:00:00');
-    const e = new Date(r.end   + 'T00:00:00');
-    return d >= s && d <= e;
-  });
+  const r = SCHOOL_HOLIDAY_RANGES.find(r => d >= new Date(r.start + 'T00:00:00') && d <= new Date(r.end + 'T00:00:00'));
   return r ? r.name : '';
 }
 
@@ -721,45 +655,31 @@ function pad2(n) { return String(n).padStart(2,'0'); }
 
 function renderCalendar(year, month, direction) {
   const body  = document.getElementById('calBody');
-  const mName = document.getElementById('calMonthName');
-  const hName = document.getElementById('calHijriMonth');
-
-  mName.textContent = `${MALAY_MONTHS[month]} ${year}`;
-  hName.textContent = hijriMonthName(year, month);
-
-  // Remove existing days (keep grid structure)
+  document.getElementById('calMonthName').textContent = `${MALAY_MONTHS[month]} ${year}`;
+  document.getElementById('calHijriMonth').textContent = hijriMonthName(year, month);
   body.innerHTML = '';
-
-  // Animate
   if (direction) {
     body.classList.remove('slide-left', 'slide-right');
     void body.offsetWidth;
     body.classList.add(direction === 'next' ? 'slide-left' : 'slide-right');
   }
-
-  const today      = new Date();
-  const firstDay   = new Date(year, month, 1).getDay(); // 0=Sun
+  const today = new Date();
+  const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const prevDays   = new Date(year, month, 0).getDate();
-
-  // Blank cells before month start
+  const prevDays = new Date(year, month, 0).getDate();
   for (let i = 0; i < firstDay; i++) {
-    const day  = prevDays - firstDay + i + 1;
     const cell = document.createElement('div');
     cell.className = 'cal-day other-month empty';
-    cell.innerHTML = `<span class="day-num">${day}</span>`;
+    cell.innerHTML = `<span class="day-num">${prevDays - firstDay + i + 1}</span>`;
     body.appendChild(cell);
   }
-
-  // Days of month
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${pad2(month+1)}-${pad2(d)}`;
     const dateObj = new Date(year, month, d);
-    const isToday = (dateObj.toDateString() === today.toDateString());
-    const isFri   = (dateObj.getDay() === 5);
+    const isToday = dateObj.toDateString() === today.toDateString();
+    const isFri   = dateObj.getDay() === 5;
     const holiday = PUBLIC_HOLIDAYS[dateStr];
     const school  = isSchoolHoliday(dateStr);
-
     const cell = document.createElement('div');
     let cls = 'cal-day';
     if (isToday)  cls += ' today';
@@ -767,7 +687,6 @@ function renderCalendar(year, month, direction) {
     if (holiday)  cls += holiday.state ? ' state-holiday' : ' holiday';
     else if (school) cls += ' school';
     cell.className = cls;
-
     const hDay = hijriDay(dateObj);
     const dotHTML = holiday
       ? '<span class="day-dot"></span>'
@@ -794,8 +713,6 @@ function renderCalendar(year, month, direction) {
 
     body.appendChild(cell);
   }
-
-  // Trailing empty cells
   const total = firstDay + daysInMonth;
   const trailing = total % 7 === 0 ? 0 : 7 - (total % 7);
   for (let d = 1; d <= trailing; d++) {
@@ -807,78 +724,46 @@ function renderCalendar(year, month, direction) {
 }
 
 function showHolidayPopup(dateStr, day, holiday, school) {
-  const popup   = document.getElementById('holidayPopup');
-  const content = document.getElementById('popupContent');
-  const [yr, mo, dy] = dateStr.split('-').map(Number);
-  const dateDisp = `${day} ${MALAY_MONTHS[mo-1]} ${yr}`;
-
-  let html = `<span class="popup-date">${dateDisp}</span>`;
+  const [yr, mo] = dateStr.split('-').map(Number);
+  let html = `<span class="popup-date">${day} ${MALAY_MONTHS[mo-1]} ${yr}</span>`;
   if (holiday) html += `<strong class="popup-holiday-name">${holiday.name}</strong>`;
   if (school)  html += `<strong>${getSchoolHolidayName(dateStr)}</strong>`;
-
-  content.innerHTML = html;
-  popup.style.display = 'block';
+  document.getElementById('popupContent').innerHTML = html;
+  document.getElementById('holidayPopup').style.display = 'block';
 }
 
 function initCalendar() {
   renderCalendar(calYear, calMonth, null);
-
   document.getElementById('calPrev').addEventListener('click', () => {
-    if (calMonth === 0) { calMonth = 11; calYear--; }
-    else calMonth--;
+    if (calMonth === 0) { calMonth = 11; calYear--; } else calMonth--;
     renderCalendar(calYear, calMonth, 'prev');
   });
   document.getElementById('calNext').addEventListener('click', () => {
-    if (calMonth === 11) { calMonth = 0; calYear++; }
-    else calMonth++;
+    if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++;
     renderCalendar(calYear, calMonth, 'next');
   });
-
-  // Touch swipe on calendar
   const calWrap = document.querySelector('.calendar-wrapper');
   let calTouchX = 0, calTouchY = 0;
-  calWrap.addEventListener('touchstart', e => {
-    calTouchX = e.touches[0].clientX;
-    calTouchY = e.touches[0].clientY;
-  }, { passive: true });
+  calWrap.addEventListener('touchstart', e => { calTouchX = e.touches[0].clientX; calTouchY = e.touches[0].clientY; }, { passive: true });
   calWrap.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - calTouchX;
     const dy = e.changedTouches[0].clientY - calTouchY;
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
-      if (dx < 0) {
-        if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++;
-        renderCalendar(calYear, calMonth, 'next');
-      } else {
-        if (calMonth === 0) { calMonth = 11; calYear--; } else calMonth--;
-        renderCalendar(calYear, calMonth, 'prev');
-      }
+      if (dx < 0) { if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++; renderCalendar(calYear, calMonth, 'next'); }
+      else        { if (calMonth === 0)  { calMonth = 11; calYear--; } else calMonth--; renderCalendar(calYear, calMonth, 'prev'); }
     }
   });
-
-  document.getElementById('popupClose').addEventListener('click', () => {
-    document.getElementById('holidayPopup').style.display = 'none';
-  });
+  document.getElementById('popupClose').addEventListener('click', () => { document.getElementById('holidayPopup').style.display = 'none'; });
 }
 
 // ═══════════════════════════════════════════
-// NAVBAR SCROLL EFFECT
+// NAVBAR
 // ═══════════════════════════════════════════
 function initNavbar() {
   const navbar = document.getElementById('navbar');
-  window.addEventListener('scroll', () => {
-    navbar.classList.toggle('scrolled', window.scrollY > 50);
-  }, { passive: true });
-
-  document.getElementById('navMenuBtn').addEventListener('click', () => {
-    document.getElementById('navMobile').classList.toggle('open');
-  });
-
-  // Close mobile menu on link click
-  document.querySelectorAll('.nav-mobile .nav-link').forEach(link => {
-    link.addEventListener('click', () => {
-      document.getElementById('navMobile').classList.remove('open');
-    });
-  });
+  window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 50), { passive: true });
+  document.getElementById('navMenuBtn').addEventListener('click', () => document.getElementById('navMobile').classList.toggle('open'));
+  document.querySelectorAll('.nav-mobile .nav-link').forEach(link => link.addEventListener('click', () => document.getElementById('navMobile').classList.remove('open')));
 }
 
 // ═══════════════════════════════════════════
@@ -1018,27 +903,18 @@ function initLetterSplits() {
       `<span class="char" style="transition-delay:${i * 0.045}s">${ch === ' ' ? '&nbsp;' : ch}</span>`
     ).join('');
   });
+  gsap.to('.hadith-section', { backgroundPositionY: '30%', ease: "none", scrollTrigger: { trigger: '.hadith-section', start: 'top bottom', end: 'bottom top', scrub: true } });
 }
 
 // ═══════════════════════════════════════════
-// TOAST NOTIFICATION
+// TOAST
 // ═══════════════════════════════════════════
 function showToast(msg) {
   let toast = document.getElementById('toast');
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'toast';
-    Object.assign(toast.style, {
-      position: 'fixed', bottom: '80px', left: '50%',
-      transform: 'translateX(-50%)',
-      background: 'rgba(30,50,90,0.95)',
-      backdropFilter: 'blur(12px)',
-      border: '1px solid rgba(255,255,255,0.12)',
-      color: '#e8f0fe', padding: '12px 24px', borderRadius: '30px',
-      fontSize: '0.88rem', zIndex: '9999', fontFamily: 'Inter,sans-serif',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-      transition: 'opacity 0.3s ease'
-    });
+    Object.assign(toast.style, { position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(30,50,90,0.95)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.12)', color: '#e8f0fe', padding: '12px 24px', borderRadius: '30px', fontSize: '0.88rem', zIndex: '9999', fontFamily: 'Inter,sans-serif', boxShadow: '0 8px 32px rgba(0,0,0,0.4)', transition: 'opacity 0.3s ease' });
     document.body.appendChild(toast);
   }
   toast.textContent = msg;
