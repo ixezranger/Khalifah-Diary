@@ -900,11 +900,11 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 
 /* Holiday popup */
 .holiday-popup {
-  position: fixed;
+  position: relative;
   bottom: 24px; left: 50%;
   transform: translateX(-50%);
   min-width: 260px;
-  max-width: 90vw;
+  max-width: 300px;
   padding: 20px 24px;
   z-index: 500;
   animation: popupIn 0.3s ease;
