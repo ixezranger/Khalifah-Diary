@@ -486,12 +486,6 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 .prayer-cards-inner .prayer-card:last-child {
   grid-column: 2 / 3;
 }
-.prayer-cards-inner {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-}
 .prayer-placeholder {
   grid-column: 1 / -1;
   text-align: center;
@@ -843,35 +837,20 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   font-weight: 700;
 }
 .cal-day.friday .day-num { color: var(--accent2); }
-.cal-day.holiday {
+.cal-day.national-holiday {
+  background: rgba(56,217,169,0.08);
+  border: 1px solid rgba(56,217,169,0.25);
+}
+.cal-day.national-holiday .day-num { color: var(--accent2); }
+.cal-day.state-holiday {
   background: rgba(244,197,66,0.1);
   border: 1px solid rgba(244,197,66,0.3);
 }
-.cal-day.holiday .day-num { color: var(--gold); }
-.cal-day.federal {
-  background: rgba(60,207,145,0.1);
-  border: 1px solid rgba(60,207,145,0.3);
-}
-.cal-day.federal .day-num { color: var(--accent2); }
-.cal-day.negeri {
-  background: rgba(244,197,66,0.1);
+.cal-day.state-holiday .day-num { color: var(--gold); }
+.cal-day.national-holiday.state-holiday {
+  background: linear-gradient(135deg, rgba(56,217,169,0.08), rgba(244,197,66,0.1));
   border: 1px solid rgba(244,197,66,0.3);
 }
-.cal-day.negeri .day-num { color: var(--gold); }
-.cal-day.state-holiday {
-  background: rgba(46,168,213,0.1);
-  border: 1px solid rgba(46,168,213,0.3);
-}
-.cal-day.state-holiday .day-num { color: var(--accent); }
-.cal-day.school {
-  background: rgba(60,207,145,0.08);
-  border: 1px dashed rgba(60,207,145,0.25);
-}
-.cal-day.state-holiday {
-  background: rgba(46,168,213,0.1);
-  border: 1px solid rgba(46,168,213,0.3);
-}
-.cal-day.state-holiday .day-num { color: var(--accent); }
 
 /* Tiny holiday name label inside the cell */
 .day-holiday-label {
@@ -885,10 +864,11 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   text-overflow: ellipsis;
   text-align: center;
   pointer-events: none;
-  color: var(--gold);
+  color: var(--accent2);
   letter-spacing: -0.01em;
 }
-.cal-day.state-holiday .day-holiday-label { color: var(--accent); }
+.cal-day.state-holiday .day-holiday-label { color: var(--gold); }
+.cal-day.national-holiday.state-holiday .day-holiday-label { color: var(--gold); }
 .day-num {
   font-size: clamp(0.75rem, 2vw, 0.9rem);
   font-weight: 500;
@@ -902,17 +882,22 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   margin-top: 2px;
 }
 .cal-day.today .day-hijri { color: var(--accent2); opacity: 0.8; }
-.day-dot {
+.day-dots {
   position: absolute;
   bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.day-dot {
   width: 4px; height: 4px;
   border-radius: 50%;
-  background: var(--gold);
+  background: var(--accent2);
+  flex-shrink: 0;
 }
-.day-dot.school { background: var(--accent2); }
-.day-dot.federal { background: var(--accent2); }
-.day-dot.negeri { background: var(--gold); }
-.day-dot.state-h { background: var(--accent); }
+.day-dot.state-h { background: var(--gold); }
 
 .swipe-hint {
   text-align: center;
@@ -940,9 +925,8 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   width: 10px; height: 10px;
   border-radius: 50%;
 }
-.legend-dot.holiday   { background: var(--gold); }
-.legend-dot.state-h   { background: var(--accent); box-shadow: 0 0 5px rgba(46,168,213,0.5); }
-.legend-dot.school    { background: var(--accent2); }
+.legend-dot.national  { background: var(--accent2); box-shadow: 0 0 5px rgba(56,217,169,0.5); }
+.legend-dot.state-h   { background: var(--gold); box-shadow: 0 0 5px rgba(244,197,66,0.5); }
 .legend-dot.today     {
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   box-shadow: 0 0 6px rgba(60,207,145,0.5);
@@ -987,7 +971,9 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 .popup-content { font-size: 0.9rem; color: var(--text-secondary); }
 .popup-content strong { color: var(--text-primary); display: block; margin-bottom: 4px; }
 .popup-content .popup-date { color: var(--accent); font-size: 0.8rem; }
-.popup-holiday-name { color: var(--gold); font-weight: 600; }
+.popup-holiday-name { font-weight: 600; display: block; }
+.popup-holiday-name.national { color: var(--accent2); }
+.popup-holiday-name.state    { color: var(--gold); }
 
 /* ══════════════════════════════════════════════════
    FOOTER
@@ -1077,7 +1063,6 @@ select option { background: #0d1f3c; color: var(--text-primary); }
     max-width: 50%;
     margin: 0 auto;
   }
-  /* Hijri date in calendar cells – smaller on mobile */
   .hijri-date, .hijri-overlay, .calendar-hijri, .day-hijri {
     font-size: 0.55rem;
     line-height: 1.1;
