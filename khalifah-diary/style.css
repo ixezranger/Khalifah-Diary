@@ -511,6 +511,7 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   transition: transform var(--transition), border-color var(--transition), background var(--transition), box-shadow var(--transition);
   position: relative;
   overflow: hidden;
+  will-change: transform;
 }
 .prayer-card::before {
   content: '';
@@ -522,27 +523,27 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   transition: opacity var(--transition);
 }
 .prayer-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(46,168,213,0.3);
+  transform: perspective(600px) rotateX(3deg) scale(1.05) translateY(-4px);
+  border-color: rgba(46,168,213,0.4);
   background: var(--glass-hover);
-  box-shadow: 0 12px 40px rgba(46,168,213,0.15);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 20px rgba(46,168,213,0.25);
 }
 .prayer-card:hover::before { opacity: 1; }
 .prayer-card.active {
   background: linear-gradient(135deg, rgba(46,168,213,0.18) 0%, rgba(60,207,145,0.1) 100%);
   border-color: var(--accent2);
-  animation: pulseGlow 2.8s ease-in-out infinite;
+  transform: scale(1.03);
+  animation: activeCardPulse 2.5s ease-in-out infinite;
 }
 .prayer-card.active::before { opacity: 1; }
-
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 20px rgba(60,207,145,0.2), inset 0 0 20px rgba(60,207,145,0.04); }
-  50%       { box-shadow: 0 0 55px rgba(60,207,145,0.55), 0 0 90px rgba(60,207,145,0.18), inset 0 0 30px rgba(60,207,145,0.1); }
+.prayer-card.active:hover {
+  animation: none;
+  transform: perspective(600px) rotateX(3deg) scale(1.05) translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 22px rgba(60,207,145,0.35);
 }
-
-@keyframes fadeInCard {
-  from { opacity: 0; transform: translateY(22px) scale(0.93); }
-  to   { opacity: 1; transform: translateY(0)   scale(1); }
+@keyframes activeCardPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(60,207,145,0.2), inset 0 0 20px rgba(60,207,145,0.05); }
+  50%       { box-shadow: 0 0 45px rgba(60,207,145,0.5), 0 0 18px rgba(244,197,66,0.15), inset 0 0 28px rgba(60,207,145,0.1); }
 }
 .prayer-card.past { opacity: 0.45; }
 .prayer-icon {

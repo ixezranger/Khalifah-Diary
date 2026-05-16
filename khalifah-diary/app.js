@@ -234,6 +234,7 @@ let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let touchStartX = 0;
 let touchStartY = 0;
+let prayerCardsAnimated = false;
 
 // ═══════════════════════════════════════════
 // HIJRI DATE CALCULATION
@@ -554,25 +555,13 @@ function renderPrayerCards(data) {
     if (nextIdx !== -1 && idx < nextIdx) card.classList.add('past');
 
     const badge = idx === nextIdx ? '<div class="prayer-badge">Seterusnya</div>' : '';
-    card.innerHTML = `
-      ${badge}
-      <span class="prayer-icon">${meta.icon}</span>
-      <div class="prayer-name-arabic">${meta.arabic}</div>
-      <div class="prayer-name">${meta.label}</div>
-      <div class="prayer-time">${data[meta.key] || '–'}</div>
-    `;
-
+    card.innerHTML = `${badge}<span class="prayer-icon">${meta.icon}</span><div class="prayer-name-arabic">${meta.arabic}</div><div class="prayer-name">${meta.label}</div><div class="prayer-time">${data[meta.key] || '–'}</div>`;
     container.appendChild(card);
-
-    if (window.gsap) {
-      gsap.from(card, {
-        opacity: 0, y: 28, scale: 0.88,
-        duration: 0.55, delay: idx * 0.08,
-        ease: "back.out(1.6)"
-      });
-    }
   });
-
+  if (window.gsap && !prayerCardsAnimated) {
+    gsap.from('.prayer-card', { opacity: 0, y: 30, duration: 0.5, stagger: 0.1, ease: 'power2.out', clearProps: 'opacity,transform' });
+    prayerCardsAnimated = true;
+  }
   document.getElementById('countdownWrap').style.display = 'block';
 }
 
