@@ -234,7 +234,6 @@ let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let touchStartX = 0;
 let touchStartY = 0;
-let prayerCardsAnimated = false;
 
 // ═══════════════════════════════════════════
 // HIJRI DATE CALCULATION
@@ -558,10 +557,6 @@ function renderPrayerCards(data) {
     card.innerHTML = `${badge}<span class="prayer-icon">${meta.icon}</span><div class="prayer-name-arabic">${meta.arabic}</div><div class="prayer-name">${meta.label}</div><div class="prayer-time">${data[meta.key] || '–'}</div>`;
     container.appendChild(card);
   });
-  if (window.gsap && !prayerCardsAnimated) {
-    gsap.from('.prayer-card', { opacity: 0, y: 30, duration: 0.5, stagger: 0.1, ease: 'power2.out', clearProps: 'opacity,transform' });
-    prayerCardsAnimated = true;
-  }
   document.getElementById('countdownWrap').style.display = 'block';
 }
 
@@ -874,56 +869,29 @@ function initNavbar() {
 // GSAP ANIMATIONS
 // ═══════════════════════════════════════════
 function initGSAP() {
-  if (!window.gsap || !window.ScrollTrigger) return;
-  gsap.registerPlugin(ScrollTrigger);
+  if (!window.gsap) return;
+  // Hero entrance animations only – no ScrollTrigger (avoids CSP eval() errors)
+  gsap.to('#heroDateBlock',   { opacity: 1, y: 0, duration: 0.8, delay: 0.3,  ease: "power3.out" });
+  gsap.to('.hero-title',      { opacity: 1, y: 0, duration: 0.9, delay: 0.55, ease: "power3.out" });
+  gsap.to('.hero-subtitle',   { opacity: 1,       duration: 0.7, delay: 0.8,  ease: "power2.out" });
+  gsap.to('.region-selector', { opacity: 1, y: 0, duration: 0.7, delay: 1,    ease: "power3.out" });
+}
 
-  // Hero elements entrance
-  gsap.to('#heroDateBlock', {
-    opacity: 1, y: 0, duration: 0.8, delay: 0.3, ease: "power3.out"
-  });
-  gsap.to('.hero-title', {
-    opacity: 1, y: 0, duration: 0.9, delay: 0.55, ease: "power3.out"
-  });
-  gsap.to('.hero-subtitle', {
-    opacity: 1, duration: 0.7, delay: 0.8, ease: "power2.out"
-  });
-  gsap.to('.region-selector', {
-    opacity: 1, y: 0, duration: 0.7, delay: 1, ease: "power3.out"
-  });
-
-  // Orb parallax
-  gsap.to('.orb-1', {
-    y: -60, ease: "none",
-    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 2 }
-  });
-  gsap.to('.orb-2', {
-    y: -40, ease: "none",
-    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1.5 }
-  });
-
-  // Section reveals
-  gsap.utils.toArray('.reveal').forEach(el => {
-    gsap.to(el, {
-      opacity: 1, y: 0, duration: 0.8, ease: "power3.out",
-      scrollTrigger: {
-        trigger: el,
-        start: 'top 85%',
-        toggleActions: 'play none none none'
+// Section reveals via IntersectionObserver (CSP-safe, replaces ScrollTrigger)
+function initRevealObserver() {
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('revealed'));
+    return;
+  }
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        observer.unobserve(entry.target);
       }
     });
-  });
-
-  // Hadith section parallax background
-  gsap.to('.hadith-section', {
-    backgroundPositionY: '30%',
-    ease: "none",
-    scrollTrigger: {
-      trigger: '.hadith-section',
-      start: 'top bottom',
-      end: 'bottom top',
-      scrub: true
-    }
-  });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 }
 
 // ═══════════════════════════════════════════
@@ -964,8 +932,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initCalendar();
   updateClock();
   setInterval(updateClock, 1000);
+  initRevealObserver();
 
-  // Wait for GSAP to be ready
   if (window.gsap) {
     initGSAP();
   } else {

@@ -379,8 +379,13 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 }
 .section-subtitle { color: var(--text-secondary); font-size: 0.95rem; }
 
-/* GSAP reveal class */
-.reveal { opacity: 0; transform: translateY(40px); }
+/* Scroll reveal – driven by IntersectionObserver (CSP-safe, no eval) */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.revealed { opacity: 1; transform: translateY(0); }
 
 /* ══════════════════════════════════════════════════
    COUNTDOWN
@@ -461,21 +466,19 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 }
 
 /* ══════════════════════════════════════════════════
-   PRAYER GRID  –  4 top row + 3 bottom row centered
+   PRAYER GRID
 ══════════════════════════════════════════════════ */
 .prayer-grid { margin-bottom: 24px; }
 
-/* 8-column backbone so each card spans exactly 2 cols */
 .prayer-cards-inner {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+  width: 100%;
 }
-.prayer-cards-inner .prayer-card           { grid-column: span 2; }
-/* Row 2: offset first card to col 2 so 3 cards sit centred */
-.prayer-cards-inner .prayer-card:nth-child(5) { grid-column: 2 / span 2; }
-.prayer-cards-inner .prayer-card:nth-child(6) { grid-column: 4 / span 2; }
-.prayer-cards-inner .prayer-card:nth-child(7) { grid-column: 6 / span 2; }
+.prayer-cards-inner .prayer-card:last-child {
+  grid-column: 2 / 3;
+}
 .prayer-placeholder {
   grid-column: 1 / -1;
   text-align: center;
@@ -512,6 +515,8 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   position: relative;
   overflow: hidden;
   will-change: transform;
+  transform: none !important;
+  opacity: 1;
 }
 .prayer-card::before {
   content: '';
@@ -523,7 +528,7 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   transition: opacity var(--transition);
 }
 .prayer-card:hover {
-  transform: perspective(600px) rotateX(3deg) scale(1.05) translateY(-4px);
+  transform: perspective(600px) rotateX(3deg) scale(1.05) translateY(-4px) !important;
   border-color: rgba(46,168,213,0.4);
   background: var(--glass-hover);
   box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 20px rgba(46,168,213,0.25);
@@ -532,20 +537,20 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 .prayer-card.active {
   background: linear-gradient(135deg, rgba(46,168,213,0.18) 0%, rgba(60,207,145,0.1) 100%);
   border-color: var(--accent2);
-  transform: scale(1.03);
+  transform: scale(1.03) !important;
   animation: activeCardPulse 2.5s ease-in-out infinite;
 }
 .prayer-card.active::before { opacity: 1; }
 .prayer-card.active:hover {
   animation: none;
-  transform: perspective(600px) rotateX(3deg) scale(1.05) translateY(-4px);
+  transform: perspective(600px) rotateX(3deg) scale(1.05) translateY(-4px) !important;
   box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 22px rgba(60,207,145,0.35);
 }
 @keyframes activeCardPulse {
   0%, 100% { box-shadow: 0 0 20px rgba(60,207,145,0.2), inset 0 0 20px rgba(60,207,145,0.05); }
   50%       { box-shadow: 0 0 45px rgba(60,207,145,0.5), 0 0 18px rgba(244,197,66,0.15), inset 0 0 28px rgba(60,207,145,0.1); }
 }
-.prayer-card.past { opacity: 0.45; }
+.prayer-card.past { opacity: 0.45 !important; }
 .prayer-icon {
   font-size: 1.8rem;
   margin-bottom: 10px;
@@ -990,20 +995,26 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 /* ══════════════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════════════ */
-@media (max-width: 720px) {
-  /* 4-col prayer grid on tablet → 2 cards per row each spanning 2 cols */
-  .prayer-cards-inner { grid-template-columns: repeat(4, 1fr); }
-  .prayer-cards-inner .prayer-card           { grid-column: span 2 !important; }
-  /* row-2 centering no longer needed at this breakpoint */
+@media (max-width: 768px) {
+  .prayer-cards-inner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .prayer-cards-inner .prayer-card:last-child {
+    grid-column: 1 / -1 !important;
+    max-width: 50%;
+    margin: 0 auto;
+  }
+  /* Hijri date in calendar cells – smaller on mobile */
+  .hijri-date, .hijri-overlay, .calendar-hijri, .day-hijri {
+    font-size: 0.55rem;
+    line-height: 1.1;
+  }
 }
 
 @media (max-width: 600px) {
   .region-selects { flex-direction: column; }
   .select-wrapper { min-width: 100%; }
   .btn-primary { width: 100%; }
-  /* 2-col prayer grid on mobile */
-  .prayer-cards-inner { grid-template-columns: repeat(2, 1fr); }
-  .prayer-cards-inner .prayer-card { grid-column: span 1 !important; }
   .countdown-timer { gap: 4px; }
   .cd-sep { font-size: 1.8rem; margin-bottom: 16px; }
   .hadith-arabic { font-size: 1.1rem; }
