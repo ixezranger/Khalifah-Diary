@@ -236,6 +236,18 @@ let touchStartX = 0;
 let touchStartY = 0;
 
 // ═══════════════════════════════════════════
+// 12-HOUR TIME FORMAT
+// ═══════════════════════════════════════════
+function to12Hour(time24) {
+  if (!time24 || !time24.includes(':')) return { time: '–', period: '' };
+  const [h, m] = time24.split(':');
+  const hour = parseInt(h, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return { time: `${hour12}:${m}`, period: ampm };
+}
+
+// ═══════════════════════════════════════════
 // HIJRI DATE CALCULATION
 // ═══════════════════════════════════════════
 function toHijri(year, month, day) {
@@ -554,7 +566,9 @@ function renderPrayerCards(data) {
     if (nextIdx !== -1 && idx < nextIdx) card.classList.add('past');
 
     const badge = idx === nextIdx ? '<div class="prayer-badge">Seterusnya</div>' : '';
-    card.innerHTML = `${badge}<span class="prayer-icon">${meta.icon}</span><div class="prayer-name-arabic">${meta.arabic}</div><div class="prayer-name">${meta.label}</div><div class="prayer-time">${data[meta.key] || '–'}</div>`;
+    const t12 = to12Hour(data[meta.key]);
+    const timeHTML = t12.period ? `${t12.time}<span class="prayer-ampm">${t12.period}</span>` : t12.time;
+    card.innerHTML = `${badge}<span class="prayer-icon">${meta.icon}</span><div class="prayer-name-arabic">${meta.arabic}</div><div class="prayer-name">${meta.label}</div><div class="prayer-time">${timeHTML}</div>`;
     container.appendChild(card);
   });
   document.getElementById('countdownWrap').style.display = 'block';
@@ -606,7 +620,9 @@ function updateCountdown() {
   document.getElementById('cdHours').textContent   = String(h).padStart(2,'0');
   document.getElementById('cdMinutes').textContent = String(m).padStart(2,'0');
   document.getElementById('cdSeconds').textContent = String(s).padStart(2,'0');
-  document.getElementById('countdownName').textContent = `${nextEntry.arabic}  ${nextEntry.label}`;
+  const nextTime12 = to12Hour(prayerData[nextEntry.key]);
+  const cdTimeStr = nextTime12.period ? ` · ${nextTime12.time} <span class="cd-ampm">${nextTime12.period}</span>` : '';
+  document.getElementById('countdownName').innerHTML = `${nextEntry.arabic} ${nextEntry.label}${cdTimeStr}`;
 
   const pct = Math.max(0, Math.min(100, 100 - (diff / totalMs) * 100));
   document.getElementById('progressBar').style.width = `${pct}%`;
@@ -895,6 +911,116 @@ function initRevealObserver() {
 }
 
 // ═══════════════════════════════════════════
+// BACKGROUND PARTICLES (pure Canvas, CSP-safe)
+// ═══════════════════════════════════════════
+function initParticles() {
+  const canvas = document.createElement('canvas');
+  canvas.id = 'particlesCanvas';
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;';
+  document.body.insertAdjacentElement('afterbegin', canvas);
+
+  const ctx = canvas.getContext('2d');
+  // Hardcoded to match --accent, --accent2, --gold CSS vars
+  const COLS = ['46,168,213', '56,217,169', '244,197,66'];
+  const COUNT = 60;
+  const mouse = { x: -9999, y: -9999 };
+  let particles = [];
+
+  const resize = () => {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+
+  const mkParticle = (scattered) => {
+    const x = Math.random() * canvas.width;
+    const y = scattered ? Math.random() * canvas.height : canvas.height + Math.random() * 80;
+    return {
+      x, y,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: -(Math.random() * 0.6 + 0.2),
+      r:  Math.random() * 2.2 + 0.4,
+      alpha: Math.random() * 0.45 + 0.15,
+      col: COLS[Math.floor(Math.random() * COLS.length)]
+    };
+  };
+
+  resize();
+  particles = Array.from({ length: COUNT }, () => mkParticle(true));
+
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
+  window.addEventListener('touchmove',  e => {
+    if (e.touches[0]) { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; }
+  }, { passive: true });
+  window.addEventListener('touchend', () => { mouse.x = -9999; mouse.y = -9999; }, { passive: true });
+  window.addEventListener('resize', resize);
+
+  const ATTRACT = 180;
+  const draw = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p, i) => {
+      const dx = mouse.x - p.x, dy = mouse.y - p.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < ATTRACT * ATTRACT && d2 > 0) {
+        const d = Math.sqrt(d2);
+        const f = (ATTRACT - d) / ATTRACT * 0.018;
+        p.vx += (dx / d) * f;
+        p.vy += (dy / d) * f;
+      }
+      p.vx *= 0.97;
+      p.vy  = Math.min(p.vy * 0.98, -0.08);
+      p.x  += p.vx;
+      p.y  += p.vy;
+      if (p.x < -5) p.x = canvas.width + 5;
+      if (p.x > canvas.width + 5) p.x = -5;
+      if (p.y < -10) particles[i] = mkParticle(false);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.col},${p.alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  };
+  draw();
+}
+
+// ═══════════════════════════════════════════
+// RIPPLE EFFECT (JS-driven, pure CSS anim)
+// ═══════════════════════════════════════════
+function spawnRipple(el, clientX, clientY) {
+  const rect = el.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 2;
+  const span = document.createElement('span');
+  span.className = 'ripple';
+  span.style.cssText = `width:${size}px;height:${size}px;left:${clientX - rect.left - size / 2}px;top:${clientY - rect.top - size / 2}px;`;
+  el.appendChild(span);
+  setTimeout(() => span.remove(), 700);
+}
+
+function initRipple() {
+  // Static elements known at init time
+  document.querySelectorAll('.btn-primary, .hadith-btn, .cal-nav-btn').forEach(el => {
+    el.addEventListener('click', e => spawnRipple(el, e.clientX, e.clientY));
+  });
+  // Delegated for dynamically-created cards and calendar days
+  document.addEventListener('click', e => {
+    const host = e.target.closest('.prayer-card, .cal-day:not(.empty)');
+    if (host) spawnRipple(host, e.clientX, e.clientY);
+  });
+}
+
+// ═══════════════════════════════════════════
+// SECTION TITLE LETTER-BY-LETTER ANIMATION
+// ═══════════════════════════════════════════
+function initLetterSplits() {
+  document.querySelectorAll('.section-title').forEach(el => {
+    const text = el.textContent;
+    el.innerHTML = text.split('').map((ch, i) =>
+      `<span class="char" style="transition-delay:${i * 0.045}s">${ch === ' ' ? '&nbsp;' : ch}</span>`
+    ).join('');
+  });
+}
+
+// ═══════════════════════════════════════════
 // TOAST NOTIFICATION
 // ═══════════════════════════════════════════
 function showToast(msg) {
@@ -925,6 +1051,8 @@ function showToast(msg) {
 // INIT
 // ═══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  initParticles();
+  initLetterSplits();
   initStars();
   initNavbar();
   initRegionSelector();
@@ -933,6 +1061,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateClock();
   setInterval(updateClock, 1000);
   initRevealObserver();
+  initRipple();
 
   if (window.gsap) {
     initGSAP();

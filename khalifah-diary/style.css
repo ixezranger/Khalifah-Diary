@@ -412,6 +412,13 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   margin-bottom: 20px;
   text-shadow: 0 0 20px rgba(60,207,145,0.4);
 }
+.cd-ampm {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  letter-spacing: 0.04em;
+}
 .countdown-timer {
   display: flex;
   align-items: center;
@@ -578,7 +585,16 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
+.prayer-ampm {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  vertical-align: super;
+  letter-spacing: 0.06em;
+  margin-left: 2px;
+}
 .prayer-card.active .prayer-time { color: var(--accent2); }
+.prayer-card.active .prayer-ampm { color: rgba(56,217,169,0.7); }
 .prayer-badge {
   position: absolute;
   top: 10px; right: 10px;
@@ -990,6 +1006,39 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 .footer-copy {
   font-size: 0.75rem;
   color: var(--text-muted);
+}
+
+/* ══════════════════════════════════════════════════
+   RIPPLE EFFECT
+══════════════════════════════════════════════════ */
+.btn-primary  { overflow: hidden; }
+.hadith-btn   { overflow: hidden; }
+.cal-nav-btn  { overflow: hidden; }
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.28);
+  transform: scale(0);
+  animation: rippleAnim 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+@keyframes rippleAnim {
+  to { transform: scale(1); opacity: 0; }
+}
+
+/* ══════════════════════════════════════════════════
+   SECTION TITLE LETTER ANIMATION
+══════════════════════════════════════════════════ */
+.section-title .char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.section-header.revealed .section-title .char {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ══════════════════════════════════════════════════
