@@ -182,26 +182,19 @@ const PUBLIC_HOLIDAYS = {
   "2025-10-20": { name: "Deepavali", type: "holiday" },
   "2025-11-11": { name: "Hari Keputeraan Sultan Kelantan", type: "holiday", state: "Kelantan" },
   "2025-12-25": { name: "Hari Krismas", type: "holiday" },
-  // ── Cuti Umum 2026 – JPM (Kelantan) ──
-  "2026-01-17": { name: "Israk dan Mikraj", type: "N" },
-  "2026-02-17": { name: "Tahun Baharu Cina", type: "P" },
-  "2026-02-18": { name: "Tahun Baharu Cina (Hari Kedua)", type: "P" },
-  "2026-03-07": { name: "Hari Nuzul Al-Quran", type: "N" },
-  "2026-03-21": { name: "Hari Raya Puasa", type: "P" },
-  "2026-03-22": { name: "Hari Raya Puasa (Hari Kedua)", type: "P" },
-  "2026-05-01": { name: "Hari Pekerja", type: "P" },
-  "2026-05-26": { name: "Hari Arafah", type: "N" },
-  "2026-05-27": { name: "Hari Raya Qurban", type: "P" },
-  "2026-05-31": { name: "Hari Wesak", type: "P" },
-  "2026-06-01": { name: "Hari Keputeraan YDP Agong", type: "P" },
-  "2026-06-17": { name: "Awal Muharam (Maal Hijrah)", type: "P" },
-  "2026-08-25": { name: "Maulidur Rasul", type: "P" },
-  "2026-08-31": { name: "Hari Kebangsaan", type: "P" },
-  "2026-09-16": { name: "Hari Malaysia", type: "P" },
-  "2026-09-29": { name: "Hari Keputeraan Sultan Kelantan", type: "N" },
-  "2026-09-30": { name: "Hari Keputeraan Sultan Kelantan (Hari Kedua)", type: "N" },
-  "2026-11-08": { name: "Hari Deepavali", type: "P" },
-  "2026-12-25": { name: "Hari Krismas", type: "P" }
+  // ── Cuti Umum Nasional 2026 ──
+  "2026-01-01": { name: "Tahun Baru 2026", type: "holiday" },
+  "2026-01-17": { name: "Tahun Baru Cina 2026", type: "holiday" },
+  "2026-01-18": { name: "Tahun Baru Cina (Hari 2) 2026", type: "holiday" },
+  "2026-02-01": { name: "Hari Wilayah Persekutuan", type: "holiday" },
+  "2026-03-04": { name: "Nuzul Al-Quran 2026", type: "holiday", state: "Kelantan" },
+  "2026-03-19": { name: "Israk dan Mikraj 2026", type: "holiday" },
+  "2026-04-03": { name: "Good Friday 2026", type: "holiday" },
+  "2026-05-01": { name: "Hari Pekerja", type: "holiday" },
+  "2026-08-31": { name: "Hari Kebangsaan", type: "holiday" },
+  "2026-09-16": { name: "Hari Malaysia", type: "holiday" },
+  "2026-11-11": { name: "Hari Keputeraan Sultan Kelantan", type: "holiday", state: "Kelantan" },
+  "2026-12-25": { name: "Hari Krismas", type: "holiday" }
 };
 
 // School holidays 2025 (Semenanjung Malaysia — approximate)
@@ -241,6 +234,18 @@ let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let touchStartX = 0;
 let touchStartY = 0;
+
+// ═══════════════════════════════════════════
+// 12-HOUR TIME FORMAT
+// ═══════════════════════════════════════════
+function to12Hour(time24) {
+  if (!time24 || !time24.includes(':')) return { time: '–', period: '' };
+  const [h, m] = time24.split(':');
+  const hour = parseInt(h, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return { time: `${hour12}:${m}`, period: ampm };
+}
 
 // ═══════════════════════════════════════════
 // HIJRI DATE CALCULATION
@@ -323,11 +328,13 @@ function initStars() {
     stars = Array.from({ length: 160 }, () => {
       const ox = Math.random() * canvas.width;
       const oy = Math.random() * canvas.height;
-      return { ox, oy, x: ox, y: oy, vx: 0, vy: 0,
+      return {
+        ox, oy, x: ox, y: oy, vx: 0, vy: 0,
         r: Math.random() * 1.2 + 0.2,
         alpha: Math.random(),
         phase: Math.random() * Math.PI * 2,
-        speed: Math.random() * 0.018 + 0.006 };
+        speed: Math.random() * 0.018 + 0.006
+      };
     });
   };
 
@@ -340,25 +347,35 @@ function initStars() {
 
   const draw = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     stars.forEach(s => {
       s.phase += s.speed;
       s.alpha = 0.25 + 0.75 * (0.5 + 0.5 * Math.sin(s.phase));
-      const dx = s.x - mouse.x, dy = s.y - mouse.y;
+
+      const dx = s.x - mouse.x;
+      const dy = s.y - mouse.y;
       const d2 = dx * dx + dy * dy;
       if (d2 < REPEL * REPEL && d2 > 0) {
-        const d = Math.sqrt(d2), f = (REPEL - d) / REPEL;
+        const d = Math.sqrt(d2);
+        const f = (REPEL - d) / REPEL;
         s.vx += (dx / d) * f * 2.8;
         s.vy += (dy / d) * f * 2.8;
       }
+
       s.vx += (s.ox - s.x) * SPRING;
       s.vy += (s.oy - s.y) * SPRING;
-      s.vx *= DAMP; s.vy *= DAMP;
-      s.x += s.vx; s.y += s.vy;
+      s.vx *= DAMP;
+      s.vy *= DAMP;
+      s.x  += s.vx;
+      s.y  += s.vy;
     });
+
+    // Connection lines (O(n²) with early dist² guard)
     const LINE2 = LINE * LINE;
     for (let i = 0; i < stars.length - 1; i++) {
       for (let j = i + 1; j < stars.length; j++) {
-        const dx = stars[i].x - stars[j].x, dy = stars[i].y - stars[j].y;
+        const dx = stars[i].x - stars[j].x;
+        const dy = stars[i].y - stars[j].y;
         const d2 = dx * dx + dy * dy;
         if (d2 < LINE2) {
           const a = (1 - Math.sqrt(d2) / LINE) * 0.13;
@@ -371,12 +388,14 @@ function initStars() {
         }
       }
     }
+
     stars.forEach(s => {
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(200,220,255,${s.alpha})`;
       ctx.fill();
     });
+
     requestAnimationFrame(draw);
   };
 
@@ -411,6 +430,7 @@ function initRegionSelector() {
     });
   });
 
+  // Load default: KTN02 (Pasir Mas, Kelantan)
   stateSelect.value = "Kelantan";
   stateSelect.dispatchEvent(new Event('change'));
   zoneSelect.value = "KTN02";
@@ -425,18 +445,31 @@ function initRegionSelector() {
 
 // ═══════════════════════════════════════════
 // PRAYER TIME API
+// e-solat.gov.my does not send CORS headers
+// that allow requests from github.io origins,
+// so we try the direct URL first (works when
+// served locally or from the same domain) and
+// fall back to the allorigins CORS proxy so
+// the app functions correctly on GitHub Pages.
+// Neither path uses eval() or new Function().
 // ═══════════════════════════════════════════
 const ESOLAT_BASE = 'https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=';
 const CORS_PROXY  = 'https://api.allorigins.win/get?url=';
 
 async function fetchWithFallback(zone) {
   const apiUrl = ESOLAT_BASE + encodeURIComponent(zone);
+
+  // Attempt 1: direct (works on localhost / same-origin environments)
   try {
     const res = await fetch(apiUrl, { mode: 'cors' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data?.prayerTime?.[0]) return data;
-  } catch (_) {}
+  } catch (_) {
+    // Direct fetch failed — fall through to proxy
+  }
+
+  // Attempt 2: allorigins CORS proxy (works on GitHub Pages)
   const proxyUrl = CORS_PROXY + encodeURIComponent(apiUrl);
   const proxyRes = await fetch(proxyUrl);
   if (!proxyRes.ok) throw new Error('Proxy HTTP ' + proxyRes.status);
@@ -449,34 +482,43 @@ async function fetchWithFallback(zone) {
 async function fetchPrayerTimes(zone) {
   const loading     = document.getElementById('prayerLoading');
   const placeholder = document.getElementById('prayerPlaceholder');
+
   placeholder.style.display = 'none';
   loading.style.display = 'flex';
   clearPrayerCards();
+
   try {
     const data = await fetchWithFallback(zone);
     prayerData = data.prayerTime[0];
     loading.style.display = 'none';
     renderPrayerCards(prayerData);
+
     const bearing = data.bearing || '';
     if (bearing) {
+      const info = document.getElementById('bearingInfo');
       document.getElementById('bearingText').textContent = 'Arah Kiblat: ' + bearing;
-      document.getElementById('bearingInfo').style.display = 'flex';
+      info.style.display = 'flex';
     }
+
     const zoneText = document.getElementById('zoneSelect').selectedOptions[0]?.textContent || zone;
     document.getElementById('solatSubtitle').textContent = zoneText;
+
     startCountdown();
   } catch (err) {
     loading.style.display = 'none';
     placeholder.style.display = 'block';
     const icon = document.createElement('div');
-    icon.className = 'placeholder-icon'; icon.textContent = '⚠️';
+    icon.className = 'placeholder-icon';
+    icon.textContent = '⚠️';
     const msg = document.createElement('p');
     msg.textContent = 'Gagal mendapatkan waktu solat. Sila cuba lagi.';
     const detail = document.createElement('small');
     detail.textContent = err.message;
-    msg.appendChild(document.createElement('br')); msg.appendChild(detail);
+    msg.appendChild(document.createElement('br'));
+    msg.appendChild(detail);
     placeholder.innerHTML = '';
-    placeholder.appendChild(icon); placeholder.appendChild(msg);
+    placeholder.appendChild(icon);
+    placeholder.appendChild(msg);
   }
 }
 
@@ -487,7 +529,12 @@ function clearPrayerCards() {
 function renderPrayerCards(data) {
   const container = document.getElementById('prayerCards');
   const now = new Date();
-  const times = PRAYER_META.map(m => ({ ...m, timeDate: parseTime(data[m.key]) }));
+
+  const times = PRAYER_META.map(m => ({
+    ...m,
+    timeDate: parseTime(data[m.key])
+  }));
+
   let nextIdx = -1;
   for (let i = 0; i < times.length; i++) {
     if (times[i].timeDate > now) { nextIdx = i; break; }
@@ -498,9 +545,10 @@ function renderPrayerCards(data) {
     if (nextIdx !== -1 && idx === nextIdx) card.classList.add('active');
     if (nextIdx !== -1 && idx < nextIdx) card.classList.add('past');
     const badge = idx === nextIdx ? '<div class="prayer-badge">Seterusnya</div>' : '';
-    card.innerHTML = `${badge}<span class="prayer-icon">${meta.icon}</span><div class="prayer-name-arabic">${meta.arabic}</div><div class="prayer-name">${meta.label}</div><div class="prayer-time">${data[meta.key] || '–'}</div>`;
+    const t12 = to12Hour(data[meta.key]);
+    const timeHTML = t12.period ? `${t12.time}<span class="prayer-ampm">${t12.period}</span>` : t12.time;
+    card.innerHTML = `${badge}<span class="prayer-icon">${meta.icon}</span><div class="prayer-name-arabic">${meta.arabic}</div><div class="prayer-name">${meta.label}</div><div class="prayer-time">${timeHTML}</div>`;
     container.appendChild(card);
-    if (window.gsap) gsap.from(card, { opacity: 0, y: 28, scale: 0.88, duration: 0.55, delay: idx * 0.08, ease: "back.out(1.6)" });
   });
   document.getElementById('countdownWrap').style.display = 'block';
 }
@@ -541,7 +589,10 @@ function updateCountdown() {
   document.getElementById('cdHours').textContent   = String(h).padStart(2,'0');
   document.getElementById('cdMinutes').textContent = String(m).padStart(2,'0');
   document.getElementById('cdSeconds').textContent = String(s).padStart(2,'0');
-  document.getElementById('countdownName').textContent = `${nextEntry.arabic}  ${nextEntry.label}`;
+  const nextTime12 = to12Hour(prayerData[nextEntry.key]);
+  const cdTimeStr = nextTime12.period ? ` · ${nextTime12.time} <span class="cd-ampm">${nextTime12.period}</span>` : '';
+  document.getElementById('countdownName').innerHTML = `${nextEntry.arabic} ${nextEntry.label}${cdTimeStr}`;
+
   const pct = Math.max(0, Math.min(100, 100 - (diff / totalMs) * 100));
   document.getElementById('progressBar').style.width = `${pct}%`;
 }
@@ -631,24 +682,35 @@ function renderCalendar(year, month, direction) {
     const school  = isSchoolHoliday(dateStr);
     const cell = document.createElement('div');
     let cls = 'cal-day';
-    if (isToday) cls += ' today';
-    if (isFri)   cls += ' friday';
-    if (holiday) {
-      if (holiday.type === 'P') cls += ' federal';
-      else if (holiday.type === 'N') cls += ' negeri';
-      else if (holiday.state) cls += ' state-holiday';
-      else cls += ' holiday';
-    } else if (school) cls += ' school';
+    if (isToday)  cls += ' today';
+    if (isFri)    cls += ' friday';
+    if (holiday)  cls += holiday.state ? ' state-holiday' : ' holiday';
+    else if (school) cls += ' school';
     cell.className = cls;
     const hDay = hijriDay(dateObj);
-    const dotCls = holiday
-      ? (holiday.type === 'P' ? 'federal' : holiday.type === 'N' ? 'negeri' : holiday.state ? 'state-h' : '')
-      : '';
-    const dotHTML = holiday ? `<span class="day-dot${dotCls ? ' ' + dotCls : ''}"></span>` : school ? '<span class="day-dot school"></span>' : '';
-    const tooltip = holiday ? holiday.name : school ? getSchoolHolidayName(dateStr) : '';
-    if (tooltip) cell.title = tooltip;
-    cell.innerHTML = `<span class="day-num">${d}</span><span class="day-hijri">${hDay}</span>${dotHTML}`;
-    if (holiday || school) cell.addEventListener('click', () => showHolidayPopup(dateStr, d, holiday, school));
+    const dotHTML = holiday
+      ? '<span class="day-dot"></span>'
+      : school
+        ? '<span class="day-dot school"></span>'
+        : '';
+
+    const labelHTML = holiday
+      ? `<span class="day-holiday-label">${holiday.name}</span>`
+      : school
+        ? `<span class="day-holiday-label">${getSchoolHolidayName(dateStr)}</span>`
+        : '';
+
+    cell.innerHTML = `
+      <span class="day-num">${d}</span>
+      <span class="day-hijri">${hDay}</span>
+      ${dotHTML}
+      ${labelHTML}
+    `;
+
+    if (holiday || school) {
+      cell.addEventListener('click', () => showHolidayPopup(dateStr, d, holiday, school));
+    }
+
     body.appendChild(cell);
   }
   const total = firstDay + daysInMonth;
@@ -708,16 +770,138 @@ function initNavbar() {
 // GSAP ANIMATIONS
 // ═══════════════════════════════════════════
 function initGSAP() {
-  if (!window.gsap || !window.ScrollTrigger) return;
-  gsap.registerPlugin(ScrollTrigger);
-  gsap.to('#heroDateBlock', { opacity: 1, y: 0, duration: 0.8, delay: 0.3, ease: "power3.out" });
-  gsap.to('.hero-title',    { opacity: 1, y: 0, duration: 0.9, delay: 0.55, ease: "power3.out" });
-  gsap.to('.hero-subtitle', { opacity: 1, duration: 0.7, delay: 0.8, ease: "power2.out" });
-  gsap.to('.region-selector', { opacity: 1, y: 0, duration: 0.7, delay: 1, ease: "power3.out" });
-  gsap.to('.orb-1', { y: -60, ease: "none", scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 2 } });
-  gsap.to('.orb-2', { y: -40, ease: "none", scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1.5 } });
-  gsap.utils.toArray('.reveal').forEach(el => {
-    gsap.to(el, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' } });
+  if (!window.gsap) return;
+  // Hero entrance animations only – no ScrollTrigger (avoids CSP eval() errors)
+  gsap.to('#heroDateBlock',   { opacity: 1, y: 0, duration: 0.8, delay: 0.3,  ease: "power3.out" });
+  gsap.to('.hero-title',      { opacity: 1, y: 0, duration: 0.9, delay: 0.55, ease: "power3.out" });
+  gsap.to('.hero-subtitle',   { opacity: 1,       duration: 0.7, delay: 0.8,  ease: "power2.out" });
+  gsap.to('.region-selector', { opacity: 1, y: 0, duration: 0.7, delay: 1,    ease: "power3.out" });
+}
+
+// Section reveals via IntersectionObserver (CSP-safe, replaces ScrollTrigger)
+function initRevealObserver() {
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('revealed'));
+    return;
+  }
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+// ═══════════════════════════════════════════
+// BACKGROUND PARTICLES (pure Canvas, CSP-safe)
+// ═══════════════════════════════════════════
+function initParticles() {
+  const canvas = document.createElement('canvas');
+  canvas.id = 'particlesCanvas';
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;';
+  document.body.insertAdjacentElement('afterbegin', canvas);
+
+  const ctx = canvas.getContext('2d');
+  // Hardcoded to match --accent, --accent2, --gold CSS vars
+  const COLS = ['46,168,213', '56,217,169', '244,197,66'];
+  const COUNT = 60;
+  const mouse = { x: -9999, y: -9999 };
+  let particles = [];
+
+  const resize = () => {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+
+  const mkParticle = (scattered) => {
+    const x = Math.random() * canvas.width;
+    const y = scattered ? Math.random() * canvas.height : canvas.height + Math.random() * 80;
+    return {
+      x, y,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: -(Math.random() * 0.6 + 0.2),
+      r:  Math.random() * 2.2 + 0.4,
+      alpha: Math.random() * 0.45 + 0.15,
+      col: COLS[Math.floor(Math.random() * COLS.length)]
+    };
+  };
+
+  resize();
+  particles = Array.from({ length: COUNT }, () => mkParticle(true));
+
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
+  window.addEventListener('touchmove',  e => {
+    if (e.touches[0]) { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; }
+  }, { passive: true });
+  window.addEventListener('touchend', () => { mouse.x = -9999; mouse.y = -9999; }, { passive: true });
+  window.addEventListener('resize', resize);
+
+  const ATTRACT = 180;
+  const draw = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p, i) => {
+      const dx = mouse.x - p.x, dy = mouse.y - p.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < ATTRACT * ATTRACT && d2 > 0) {
+        const d = Math.sqrt(d2);
+        const f = (ATTRACT - d) / ATTRACT * 0.018;
+        p.vx += (dx / d) * f;
+        p.vy += (dy / d) * f;
+      }
+      p.vx *= 0.97;
+      p.vy  = Math.min(p.vy * 0.98, -0.08);
+      p.x  += p.vx;
+      p.y  += p.vy;
+      if (p.x < -5) p.x = canvas.width + 5;
+      if (p.x > canvas.width + 5) p.x = -5;
+      if (p.y < -10) particles[i] = mkParticle(false);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.col},${p.alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  };
+  draw();
+}
+
+// ═══════════════════════════════════════════
+// RIPPLE EFFECT (JS-driven, pure CSS anim)
+// ═══════════════════════════════════════════
+function spawnRipple(el, clientX, clientY) {
+  const rect = el.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 2;
+  const span = document.createElement('span');
+  span.className = 'ripple';
+  span.style.cssText = `width:${size}px;height:${size}px;left:${clientX - rect.left - size / 2}px;top:${clientY - rect.top - size / 2}px;`;
+  el.appendChild(span);
+  setTimeout(() => span.remove(), 700);
+}
+
+function initRipple() {
+  // Static elements known at init time
+  document.querySelectorAll('.btn-primary, .hadith-btn, .cal-nav-btn').forEach(el => {
+    el.addEventListener('click', e => spawnRipple(el, e.clientX, e.clientY));
+  });
+  // Delegated for dynamically-created cards and calendar days
+  document.addEventListener('click', e => {
+    const host = e.target.closest('.prayer-card, .cal-day:not(.empty)');
+    if (host) spawnRipple(host, e.clientX, e.clientY);
+  });
+}
+
+// ═══════════════════════════════════════════
+// SECTION TITLE LETTER-BY-LETTER ANIMATION
+// ═══════════════════════════════════════════
+function initLetterSplits() {
+  document.querySelectorAll('.section-title').forEach(el => {
+    const text = el.textContent;
+    el.innerHTML = text.split('').map((ch, i) =>
+      `<span class="char" style="transition-delay:${i * 0.045}s">${ch === ' ' ? '&nbsp;' : ch}</span>`
+    ).join('');
   });
   gsap.to('.hadith-section', { backgroundPositionY: '30%', ease: "none", scrollTrigger: { trigger: '.hadith-section', start: 'top bottom', end: 'bottom top', scrub: true } });
 }
@@ -743,6 +927,8 @@ function showToast(msg) {
 // INIT
 // ═══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  initParticles();
+  initLetterSplits();
   initStars();
   initNavbar();
   initRegionSelector();
@@ -750,6 +936,17 @@ document.addEventListener('DOMContentLoaded', () => {
   initCalendar();
   updateClock();
   setInterval(updateClock, 1000);
-  if (window.gsap) initGSAP(); else window.addEventListener('load', initGSAP);
-  setTimeout(() => fetchPrayerTimes('KTN02'), 600);
+  initRevealObserver();
+  initRipple();
+
+  if (window.gsap) {
+    initGSAP();
+  } else {
+    window.addEventListener('load', initGSAP);
+  }
+
+  // Auto-load default zone: KTN02 – Pasir Mas, Kelantan
+  setTimeout(() => {
+    fetchPrayerTimes('KTN02');
+  }, 600);
 });

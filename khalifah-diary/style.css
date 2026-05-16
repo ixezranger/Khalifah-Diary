@@ -379,8 +379,13 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 }
 .section-subtitle { color: var(--text-secondary); font-size: 0.95rem; }
 
-/* GSAP reveal class */
-.reveal { opacity: 0; transform: translateY(40px); }
+/* Scroll reveal – driven by IntersectionObserver (CSP-safe, no eval) */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.revealed { opacity: 1; transform: translateY(0); }
 
 /* ══════════════════════════════════════════════════
    COUNTDOWN
@@ -406,6 +411,13 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   color: var(--accent2);
   margin-bottom: 20px;
   text-shadow: 0 0 20px rgba(60,207,145,0.4);
+}
+.cd-ampm {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  letter-spacing: 0.04em;
 }
 .countdown-timer {
   display: flex;
@@ -463,11 +475,16 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 /* ══════════════════════════════════════════════════
    PRAYER GRID
 ══════════════════════════════════════════════════ */
-.prayer-grid {
+.prayer-grid { margin-bottom: 24px; }
+
+.prayer-cards-inner {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-bottom: 24px;
+  width: 100%;
+}
+.prayer-cards-inner .prayer-card:last-child {
+  grid-column: 2 / 3;
 }
 .prayer-cards-inner {
   grid-column: 1 / -1;
@@ -510,6 +527,9 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
   position: relative;
   overflow: hidden;
+  will-change: transform;
+  transform: none !important;
+  opacity: 1;
 }
 .prayer-card::before {
   content: '';
@@ -521,19 +541,29 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   transition: opacity var(--transition);
 }
 .prayer-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(46,168,213,0.3);
+  transform: perspective(600px) rotateX(3deg) scale(1.05) translateY(-4px) !important;
+  border-color: rgba(46,168,213,0.4);
   background: var(--glass-hover);
-  box-shadow: 0 12px 40px rgba(46,168,213,0.15);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 20px rgba(46,168,213,0.25);
 }
 .prayer-card:hover::before { opacity: 1; }
 .prayer-card.active {
   background: linear-gradient(135deg, rgba(46,168,213,0.18) 0%, rgba(60,207,145,0.1) 100%);
   border-color: var(--accent2);
-  box-shadow: 0 0 30px rgba(60,207,145,0.2), inset 0 0 30px rgba(60,207,145,0.05);
+  transform: scale(1.03) !important;
+  animation: activeCardPulse 2.5s ease-in-out infinite;
 }
 .prayer-card.active::before { opacity: 1; }
-.prayer-card.past { opacity: 0.45; }
+.prayer-card.active:hover {
+  animation: none;
+  transform: perspective(600px) rotateX(3deg) scale(1.05) translateY(-4px) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 22px rgba(60,207,145,0.35);
+}
+@keyframes activeCardPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(60,207,145,0.2), inset 0 0 20px rgba(60,207,145,0.05); }
+  50%       { box-shadow: 0 0 45px rgba(60,207,145,0.5), 0 0 18px rgba(244,197,66,0.15), inset 0 0 28px rgba(60,207,145,0.1); }
+}
+.prayer-card.past { opacity: 0.45 !important; }
 .prayer-icon {
   font-size: 1.8rem;
   margin-bottom: 10px;
@@ -561,7 +591,16 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
+.prayer-ampm {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  vertical-align: super;
+  letter-spacing: 0.06em;
+  margin-left: 2px;
+}
 .prayer-card.active .prayer-time { color: var(--accent2); }
+.prayer-card.active .prayer-ampm { color: rgba(56,217,169,0.7); }
 .prayer-badge {
   position: absolute;
   top: 10px; right: 10px;
@@ -782,12 +821,15 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   justify-content: center;
   border-radius: 10px;
   cursor: pointer;
-  transition: background var(--transition), transform var(--transition);
+  transition: background var(--transition), transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow var(--transition);
   min-height: 44px;
+  overflow: hidden;
 }
 .cal-day:hover:not(.empty):not(.today) {
-  background: rgba(255,255,255,0.06);
-  transform: scale(1.08);
+  background: rgba(255,255,255,0.08);
+  transform: scale(1.13);
+  z-index: 2;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 .cal-day.empty { cursor: default; pointer-events: none; }
 .cal-day.other-month .day-num { color: var(--text-muted); opacity: 0.35; }
@@ -825,6 +867,28 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   background: rgba(60,207,145,0.08);
   border: 1px dashed rgba(60,207,145,0.25);
 }
+.cal-day.state-holiday {
+  background: rgba(46,168,213,0.1);
+  border: 1px solid rgba(46,168,213,0.3);
+}
+.cal-day.state-holiday .day-num { color: var(--accent); }
+
+/* Tiny holiday name label inside the cell */
+.day-holiday-label {
+  position: absolute;
+  bottom: 2px;
+  left: 1px; right: 1px;
+  font-size: 0.45rem;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  pointer-events: none;
+  color: var(--gold);
+  letter-spacing: -0.01em;
+}
+.cal-day.state-holiday .day-holiday-label { color: var(--accent); }
 .day-num {
   font-size: clamp(0.75rem, 2vw, 0.9rem);
   font-weight: 500;
@@ -876,12 +940,10 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   width: 10px; height: 10px;
   border-radius: 50%;
 }
-.legend-dot.holiday { background: var(--gold); }
-.legend-dot.federal { background: var(--accent2); }
-.legend-dot.negeri { background: var(--gold); }
-.legend-dot.state-h { background: var(--accent); }
-.legend-dot.school { background: var(--accent2); }
-.legend-dot.today {
+.legend-dot.holiday   { background: var(--gold); }
+.legend-dot.state-h   { background: var(--accent); box-shadow: 0 0 5px rgba(46,168,213,0.5); }
+.legend-dot.school    { background: var(--accent2); }
+.legend-dot.today     {
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   box-shadow: 0 0 6px rgba(60,207,145,0.5);
 }
@@ -971,23 +1033,71 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 }
 
 /* ══════════════════════════════════════════════════
+   RIPPLE EFFECT
+══════════════════════════════════════════════════ */
+.btn-primary  { overflow: hidden; }
+.hadith-btn   { overflow: hidden; }
+.cal-nav-btn  { overflow: hidden; }
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.28);
+  transform: scale(0);
+  animation: rippleAnim 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+@keyframes rippleAnim {
+  to { transform: scale(1); opacity: 0; }
+}
+
+/* ══════════════════════════════════════════════════
+   SECTION TITLE LETTER ANIMATION
+══════════════════════════════════════════════════ */
+.section-title .char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.section-header.revealed .section-title .char {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ══════════════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .prayer-cards-inner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .prayer-cards-inner .prayer-card:last-child {
+    grid-column: 1 / -1 !important;
+    max-width: 50%;
+    margin: 0 auto;
+  }
+  /* Hijri date in calendar cells – smaller on mobile */
+  .hijri-date, .hijri-overlay, .calendar-hijri, .day-hijri {
+    font-size: 0.55rem;
+    line-height: 1.1;
+  }
+}
+
 @media (max-width: 600px) {
   .region-selects { flex-direction: column; }
   .select-wrapper { min-width: 100%; }
   .btn-primary { width: 100%; }
-  .prayer-grid { grid-template-columns: repeat(2, 1fr); }
   .countdown-timer { gap: 4px; }
   .cd-sep { font-size: 1.8rem; margin-bottom: 16px; }
   .hadith-arabic { font-size: 1.1rem; }
   .calendar-wrapper { padding: 16px; }
   .cal-day { min-height: 38px; }
   .cal-month-name { font-size: 1.2rem; }
+  .day-holiday-label { display: none; }
 }
 
 @media (max-width: 400px) {
-  .prayer-grid { grid-template-columns: repeat(2, 1fr); }
   .cal-day { border-radius: 7px; }
   .day-num { font-size: 0.7rem; }
   .day-hijri { display: block; }
