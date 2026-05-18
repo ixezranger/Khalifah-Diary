@@ -358,19 +358,58 @@ function toHijri(year, month, day) {
   return { year: yearH, month: monthH, day: dayH };
 }
 
+// Malaysia JAKIM rukyah-based Hijri month starts
+// [greg_year, greg_month(1-based), greg_day, hijri_year, hijri_month(1-based)]
+// Anchored to confirmed official dates; estimated months filled by derivation.
+const MY_HIJRI_MONTH_STARTS = [
+  [2025,  6, 28, 1447,  1],  // 1 Muharram 1447H
+  [2025,  7, 28, 1447,  2],  // 1 Safar 1447H
+  [2025,  8, 26, 1447,  3],  // 1 Rabiulawal 1447H
+  [2025,  9, 25, 1447,  4],  // 1 Rabiulakhir 1447H
+  [2025, 10, 24, 1447,  5],  // 1 Jamadilawal 1447H
+  [2025, 11, 23, 1447,  6],  // 1 Jamadilakhir 1447H
+  [2025, 12, 22, 1447,  7],  // 1 Rajab 1447H
+  [2026,  1, 21, 1447,  8],  // 1 Shaaban 1447H
+  [2026,  2, 19, 1447,  9],  // 1 Ramadan 1447H  ← 17 Ramadan = Nuzul Al-Quran Mar 7
+  [2026,  3, 21, 1447, 10],  // 1 Syawal 1447H   ← Hari Raya Puasa (confirmed)
+  [2026,  4, 19, 1447, 11],  // 1 Zulkaedah 1447H
+  [2026,  5, 18, 1447, 12],  // 1 Zulhijjah 1447H ← confirmed (today)
+  [2026,  6, 17, 1448,  1],  // 1 Muharram 1448H  ← Awal Muharam (confirmed)
+  [2026,  7, 16, 1448,  2],  // 1 Safar 1448H
+  [2026,  8, 14, 1448,  3],  // 1 Rabiulawal 1448H ← 12 Rabiulawal = Maulidur Rasul Aug 25
+  [2026,  9, 13, 1448,  4],  // 1 Rabiulakhir 1448H
+  [2026, 10, 12, 1448,  5],  // 1 Jamadilawal 1448H
+  [2026, 11, 11, 1448,  6],  // 1 Jamadilakhir 1448H
+  [2026, 12, 10, 1448,  7],  // 1 Rajab 1448H
+  [2027,  1,  9, 1448,  8],  // 1 Shaaban 1448H
+  [2027,  2,  7, 1448,  9],  // 1 Ramadan 1448H
+];
+
+function toHijriMY(date) {
+  const ms = date.getTime();
+  for (let i = MY_HIJRI_MONTH_STARTS.length - 1; i >= 0; i--) {
+    const [sy, sm, sd, hy, hm] = MY_HIJRI_MONTH_STARTS[i];
+    const startMs = new Date(sy, sm - 1, sd).getTime();
+    if (ms >= startMs) {
+      return { year: hy, month: hm, day: Math.round((ms - startMs) / 86400000) + 1 };
+    }
+  }
+  const y = date.getFullYear(), m = date.getMonth() + 1, d = date.getDate();
+  return toHijri(y, m, d);
+}
+
 function hijriDay(date) {
-  const h = toHijri(date.getFullYear(), date.getMonth() + 1, date.getDate());
-  return h.day;
+  return toHijriMY(date).day;
 }
 
 function hijriMonthName(year, month) {
   const mid = new Date(year, month, 15);
-  const h = toHijri(mid.getFullYear(), mid.getMonth() + 1, mid.getDate());
+  const h = toHijriMY(mid);
   return `${HIJRI_MONTHS[h.month - 1]} ${h.year} H`;
 }
 
 function arabicHijriString(date) {
-  const h = toHijri(date.getFullYear(), date.getMonth() + 1, date.getDate());
+  const h = toHijriMY(date);
   const dayName = HIJRI_DAYS[date.getDay()];
   const hijriDay   = toArabicNumerals(h.day);
   const hijriMonth = HIJRI_MONTHS[h.month - 1];
