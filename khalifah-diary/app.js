@@ -733,18 +733,54 @@ function renderPrayerCards(data) {
   for (let i = 0; i < times.length; i++) {
     if (times[i].timeDate > now) { nextIdx = i; break; }
   }
+
   PRAYER_META.forEach((meta, idx) => {
-    const card = document.createElement('div');
-    card.className = 'prayer-card';
-    if (nextIdx !== -1 && idx === nextIdx) card.classList.add('active');
-    if (nextIdx !== -1 && idx < nextIdx) card.classList.add('past');
-    const badge = idx === nextIdx ? '<div class="prayer-badge">Seterusnya</div>' : '';
+    const item = document.createElement('div');
+    item.className = 'pw-item';
+    if (nextIdx !== -1 && idx === nextIdx) item.classList.add('pw-item--next');
+    if (nextIdx !== -1 && idx < nextIdx)   item.classList.add('pw-item--past');
+
     const t12 = to12Hour(data[meta.key]);
-    const timeHTML = t12.period ? `${t12.time}<span class="prayer-ampm">${t12.period}</span>` : t12.time;
-    card.innerHTML = `${badge}<span class="prayer-icon">${meta.icon}</span><div class="prayer-name-arabic">${meta.arabic}</div><div class="prayer-name">${meta.label}</div><div class="prayer-time">${timeHTML}</div>`;
-    container.appendChild(card);
+    const timeHTML = t12.period
+      ? `${t12.time}<span class="pw-item-ampm">${t12.period}</span>`
+      : t12.time;
+
+    item.innerHTML = `
+      <span class="pw-item-icon">${meta.icon}</span>
+      <span class="pw-item-arabic">${meta.arabic}</span>
+      <span class="pw-item-name">${meta.label}</span>
+      <span class="pw-item-time">${timeHTML}</span>
+      ${idx === nextIdx ? '<span class="pw-item-badge">Seterusnya</span>' : ''}
+    `;
+    container.appendChild(item);
   });
+
   document.getElementById('countdownWrap').style.display = 'block';
+  updateArc();
+}
+
+// Update the SVG arc based on time of day (Subuh → Isyak span)
+function updateArc() {
+  if (!prayerData) return;
+  const arcEl  = document.getElementById('arcProgress');
+  const dotEl  = document.getElementById('arcDot');
+  if (!arcEl || !dotEl) return;
+
+  const now    = new Date();
+  const dayMs  = 24 * 3600 * 1000;
+  const pct    = (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / (dayMs / 1000);
+
+  const circ   = 2 * Math.PI * 110;          // r=110
+  const offset = circ * (1 - pct);
+  arcEl.style.strokeDashoffset = offset;
+
+  // Move dot around the arc
+  const angle  = pct * 360 - 90;             // starts at top (-90°)
+  const rad    = (angle * Math.PI) / 180;
+  const cx     = 130 + 110 * Math.cos(rad);
+  const cy     = 130 + 110 * Math.sin(rad);
+  dotEl.setAttribute('cx', cx.toFixed(2));
+  dotEl.setAttribute('cy', cy.toFixed(2));
 }
 
 function parseTime(timeStr) {
@@ -789,6 +825,7 @@ function updateCountdown() {
 
   const pct = Math.max(0, Math.min(100, 100 - (diff / totalMs) * 100));
   document.getElementById('progressBar').style.width = `${pct}%`;
+  updateArc();
 }
 
 // ═══════════════════════════════════════════

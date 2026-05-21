@@ -84,25 +84,70 @@
         <p class="section-subtitle" id="solatSubtitle">Pilih kawasan untuk melihat waktu solat</p>
       </div>
 
-      <!-- Countdown -->
-      <div class="countdown-wrap reveal" id="countdownWrap" style="display:none">
-        <div class="glass-card countdown-card">
-          <p class="countdown-label" id="countdownLabel">Masa Sehingga Solat Seterusnya</p>
-          <div class="countdown-name" id="countdownName">–</div>
-          <div class="countdown-timer" id="countdownTimer">
-            <div class="cd-unit"><span class="cd-num" id="cdHours">00</span><span class="cd-lbl">Jam</span></div>
-            <div class="cd-sep">:</div>
-            <div class="cd-unit"><span class="cd-num" id="cdMinutes">00</span><span class="cd-lbl">Minit</span></div>
-            <div class="cd-sep">:</div>
-            <div class="cd-unit"><span class="cd-num" id="cdSeconds">00</span><span class="cd-lbl">Saat</span></div>
+      <!-- ── Unified Prayer Widget ── -->
+      <div class="pw-shell glass-card reveal" id="countdownWrap" style="display:none">
+
+        <!-- Arc + Hero -->
+        <div class="pw-hero">
+          <!-- SVG arc ring -->
+          <div class="pw-arc-wrap">
+            <svg class="pw-arc-svg" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#2ea8d5"/>
+                  <stop offset="100%" stop-color="#38d9a9"/>
+                </linearGradient>
+                <filter id="arcGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <!-- Track -->
+              <circle class="pw-arc-track" cx="130" cy="130" r="110" stroke-width="8" stroke-linecap="round"/>
+              <!-- Progress -->
+              <circle class="pw-arc-prog" id="arcProgress" cx="130" cy="130" r="110"
+                stroke="url(#arcGrad)" stroke-width="8" stroke-linecap="round"
+                filter="url(#arcGlow)"
+                stroke-dasharray="691.15" stroke-dashoffset="691.15"
+                transform="rotate(-90 130 130)"/>
+              <!-- Dot at head of arc -->
+              <circle class="pw-arc-dot" id="arcDot" cx="130" cy="20" r="5" fill="#38d9a9" filter="url(#arcGlow)"/>
+            </svg>
+
+            <!-- Centre content -->
+            <div class="pw-arc-center">
+              <div class="pw-next-label">Solat Seterusnya</div>
+              <div class="pw-next-name" id="countdownName">–</div>
+              <div class="pw-timer" id="countdownTimer">
+                <div class="pw-td"><span class="pw-tn" id="cdHours">00</span><span class="pw-tl">Jam</span></div>
+                <span class="pw-tsep">:</span>
+                <div class="pw-td"><span class="pw-tn" id="cdMinutes">00</span><span class="pw-tl">Minit</span></div>
+                <span class="pw-tsep">:</span>
+                <div class="pw-td"><span class="pw-tn" id="cdSeconds">00</span><span class="pw-tl">Saat</span></div>
+              </div>
+            </div>
           </div>
-          <div class="countdown-progress" id="countdownProgress">
-            <div class="progress-bar" id="progressBar"></div>
-          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="pw-divider"></div>
+
+        <!-- Timeline strip -->
+        <div class="pw-timeline" id="prayerCards"></div>
+
+        <!-- Progress bar -->
+        <div class="pw-bar-wrap" id="countdownProgress">
+          <div class="pw-bar" id="progressBar"></div>
+        </div>
+
+        <!-- Qiblat bearing -->
+        <div class="pw-bearing" id="bearingInfo" style="display:none">
+          <span class="pw-bearing-icon">🧭</span>
+          <span id="bearingText">Arah Kiblat: –</span>
         </div>
       </div>
 
-      <!-- Prayer Cards Grid -->
+      <!-- Loading / placeholder (outside widget, shown before load) -->
       <div class="prayer-grid" id="prayerGrid">
         <div class="prayer-loading" id="prayerLoading" style="display:none">
           <div class="spinner"></div>
@@ -112,14 +157,8 @@
           <div class="placeholder-icon">🕌</div>
           <p>Sila pilih negeri dan zon untuk memaparkan waktu solat</p>
         </div>
-        <div class="prayer-cards-inner" id="prayerCards"></div>
       </div>
 
-      <!-- Location bearing info -->
-      <div class="bearing-info glass-card reveal" id="bearingInfo" style="display:none">
-        <span class="bearing-icon">🦦</span>
-        <span id="bearingText">Bearing Qiblat: –</span>
-      </div>
     </div>
   </section>
 
