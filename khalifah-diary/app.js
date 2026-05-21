@@ -575,48 +575,65 @@ function initRegionSelector() {
 // ═══════════════════════════════════════════
 // PRAYER TIME API
 // Primary source: api.waktusolat.app — a
-// CORS-enabled API that sources data directly
-// from JAKIM e-solat.gov.my. This avoids the
-// stale-cache issue with third-party proxies.
+// CORS-enabled API sourced directly from JAKIM.
+// Avoids the stale-cache issues of 3rd-party
+// proxies.
 //
 // Fallback chain:
 //   1. api.waktusolat.app/v2/solat/{zone}
 //   2. e-solat.gov.my direct (localhost only)
 //   3. allorigins CORS proxy (last resort)
 //
-// Response from api.waktusolat.app uses the
-// same field names as JAKIM (imsak, fajr,
-// syuruk, dhuhr, asr, maghrib, isha) so no
-// mapping changes are needed downstream.
+// api.waktusolat.app v2 response shape:
+//   { prayers: [ { day, fajr, syuruk, dhuhr,
+//     asr, maghrib, isha, imsak?, hijri, ...} ],
+//     zone, month, year, bearing? }
+//   - 'prayers' is a monthly array; each entry
+//     has a 'day' integer (1-based day of month)
+//   - times are "HH:MM:SS" — strip seconds
+//   - 'imsak' may be absent in some responses
 // Neither path uses eval() or new Function().
 // ═══════════════════════════════════════════
 const WAKTUSOLAT_API = 'https://api.waktusolat.app/v2/solat/';
 const ESOLAT_BASE    = 'https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=';
 const CORS_PROXY     = 'https://api.allorigins.win/get?url=';
 
-// Normalise api.waktusolat.app response to the
-// same shape as the JAKIM e-solat response so
-// the rest of the app needs no changes.
+// Strip the seconds portion from "HH:MM:SS" → "HH:MM".
+// Times from api.waktusolat.app include seconds; JAKIM
+// direct and the rest of the app expect "HH:MM" only.
+function stripSec(t) {
+  if (!t) return t;
+  const parts = t.split(':');
+  return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : t;
+}
+
+// Normalise api.waktusolat.app v2 response into the same
+// shape as the JAKIM e-solat response so all downstream
+// code (renderPrayerCards, parseTime, countdown) is unchanged.
 function normaliseWaktuSolatApp(apiData, zone) {
-  const today = new Date();
-  const day   = today.getDate();
-  // prayerTime array is indexed by day-of-month (1-based)
-  const entry = apiData.prayerTime?.[day - 1];
+  const todayDay = new Date().getDate();           // 1-based
+  const arr      = apiData.prayers;                // correct key
+  if (!Array.isArray(arr) || arr.length === 0) return null;
+
+  // Find today's entry by its 'day' value, not by array index,
+  // because the array may not start at index 0 == day 1.
+  const entry = arr.find(e => Number(e.day) === todayDay);
   if (!entry) return null;
+
   return {
-    bearing:    apiData.bearing   || '',
+    bearing:    apiData.bearing || '',
     zone:       zone,
     prayerTime: [{
-      imsak:   entry.imsak,
-      fajr:    entry.fajr,
-      syuruk:  entry.syuruk,
-      dhuhr:   entry.dhuhr,
-      asr:     entry.asr,
-      maghrib: entry.maghrib,
-      isha:    entry.isha,
-      date:    entry.date   || '',
-      day:     entry.day    || '',
-      hijri:   entry.hijri  || ''
+      imsak:   stripSec(entry.imsak)   || stripSec(entry.fajr), // fallback fajr if absent
+      fajr:    stripSec(entry.fajr),
+      syuruk:  stripSec(entry.syuruk),
+      dhuhr:   stripSec(entry.dhuhr),
+      asr:     stripSec(entry.asr),
+      maghrib: stripSec(entry.maghrib),
+      isha:    stripSec(entry.isha),
+      date:    entry.date  || '',
+      day:     entry.day   || '',
+      hijri:   entry.hijri || ''
     }]
   };
 }
@@ -626,7 +643,7 @@ async function fetchWithFallback(zone) {
   try {
     const res = await fetch(WAKTUSOLAT_API + zone);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const apiData = await res.json();
+    const apiData    = await res.json();
     const normalised = normaliseWaktuSolatApp(apiData, zone);
     if (normalised?.prayerTime?.[0]) return normalised;
   } catch (_) {
