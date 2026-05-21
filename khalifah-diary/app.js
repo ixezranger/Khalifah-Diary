@@ -29,9 +29,8 @@ const ZONES = {
     { code: "KDH07", name: "Puncak Gunung Jerai" }
   ],
   "Kelantan": [
-    { code: "KTN01", name: "Kota Bharu, Bachok, Pasir Puteh, Tumpat" },
-    { code: "KTN02", name: "Pasir Mas, Tanah Merah, Machang, Kuala Krai, Jeli" },
-    { code: "KTN03", name: "Gua Musang (Ulu Kelantan)" }
+    { code: "KTN01", name: "Kota Bharu, Bachok, Machang, Pasir Mas, Pasir Puteh, Tanah Merah, Tumpat, Kuala Krai, Mukim Chiku" },
+    { code: "KTN02", name: "Gua Musang (Daerah Galas Dan Bertam), Jeli, Jajahan Kecil Lojing" }
   ],
   "Melaka": [
     { code: "MLK01", name: "Seluruh Melaka" }
@@ -278,7 +277,7 @@ const ZONE_TO_STATE = {
   JHR01: 'Johor',   JHR02: 'Johor',   JHR03: 'Johor',   JHR04: 'Johor',
   KDH01: 'Kedah',   KDH02: 'Kedah',   KDH03: 'Kedah',   KDH04: 'Kedah',
   KDH05: 'Kedah',   KDH06: 'Kedah',   KDH07: 'Kedah',
-  KTN01: 'Kelantan', KTN02: 'Kelantan', KTN03: 'Kelantan',
+  KTN01: 'Kelantan', KTN02: 'Kelantan',
   MLK01: 'Melaka',
   NGS01: 'Negeri Sembilan', NGS02: 'Negeri Sembilan',
   PHG01: 'Pahang',  PHG02: 'Pahang',  PHG03: 'Pahang',  PHG04: 'Pahang',
@@ -559,10 +558,10 @@ function initRegionSelector() {
     });
   });
 
-  // Load default: KTN02 (Pasir Mas, Kelantan)
+  // Load default: KTN01 (Pasir Mas, Kota Bharu, Kelantan)
   stateSelect.value = "Kelantan";
   stateSelect.dispatchEvent(new Event('change'));
-  zoneSelect.value = "KTN02";
+  zoneSelect.value = "KTN01";
 
   document.getElementById('loadPrayerBtn').addEventListener('click', () => {
     const zone = zoneSelect.value;
@@ -1148,8 +1147,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('load', initGSAP);
   }
 
-  // Auto-load default zone: KTN02 – Pasir Mas, Kelantan
+  // Auto-load default zone: KTN01 – Pasir Mas, Kota Bharu, Kelantan
   setTimeout(() => {
-    fetchPrayerTimes('KTN02');
+    fetchPrayerTimes('KTN01');
   }, 600);
 });
