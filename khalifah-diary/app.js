@@ -574,36 +574,83 @@ function initRegionSelector() {
 
 // ═══════════════════════════════════════════
 // PRAYER TIME API
-// e-solat.gov.my does not send CORS headers
-// that allow requests from github.io origins,
-// so we try the direct URL first (works when
-// served locally or from the same domain) and
-// fall back to the allorigins CORS proxy so
-// the app functions correctly on GitHub Pages.
+// Primary source: api.waktusolat.app — a
+// CORS-enabled API that sources data directly
+// from JAKIM e-solat.gov.my. This avoids the
+// stale-cache issue with third-party proxies.
+//
+// Fallback chain:
+//   1. api.waktusolat.app/v2/solat/{zone}
+//   2. e-solat.gov.my direct (localhost only)
+//   3. allorigins CORS proxy (last resort)
+//
+// Response from api.waktusolat.app uses the
+// same field names as JAKIM (imsak, fajr,
+// syuruk, dhuhr, asr, maghrib, isha) so no
+// mapping changes are needed downstream.
 // Neither path uses eval() or new Function().
 // ═══════════════════════════════════════════
-const ESOLAT_BASE = 'https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=';
-const CORS_PROXY  = 'https://api.allorigins.win/get?url=';
+const WAKTUSOLAT_API = 'https://api.waktusolat.app/v2/solat/';
+const ESOLAT_BASE    = 'https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=';
+const CORS_PROXY     = 'https://api.allorigins.win/get?url=';
+
+// Normalise api.waktusolat.app response to the
+// same shape as the JAKIM e-solat response so
+// the rest of the app needs no changes.
+function normaliseWaktuSolatApp(apiData, zone) {
+  const today = new Date();
+  const day   = today.getDate();
+  // prayerTime array is indexed by day-of-month (1-based)
+  const entry = apiData.prayerTime?.[day - 1];
+  if (!entry) return null;
+  return {
+    bearing:    apiData.bearing   || '',
+    zone:       zone,
+    prayerTime: [{
+      imsak:   entry.imsak,
+      fajr:    entry.fajr,
+      syuruk:  entry.syuruk,
+      dhuhr:   entry.dhuhr,
+      asr:     entry.asr,
+      maghrib: entry.maghrib,
+      isha:    entry.isha,
+      date:    entry.date   || '',
+      day:     entry.day    || '',
+      hijri:   entry.hijri  || ''
+    }]
+  };
+}
 
 async function fetchWithFallback(zone) {
-  const apiUrl = ESOLAT_BASE + encodeURIComponent(zone);
-
-  // Attempt 1: direct (works on localhost / same-origin environments)
+  // Attempt 1: api.waktusolat.app — CORS-enabled, sourced from JAKIM
   try {
-    const res = await fetch(apiUrl, { mode: 'cors' });
+    const res = await fetch(WAKTUSOLAT_API + zone);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const apiData = await res.json();
+    const normalised = normaliseWaktuSolatApp(apiData, zone);
+    if (normalised?.prayerTime?.[0]) return normalised;
+  } catch (_) {
+    // Fall through to next source
+  }
+
+  const esolatUrl = ESOLAT_BASE + encodeURIComponent(zone);
+
+  // Attempt 2: e-solat.gov.my direct (works on localhost / same-origin)
+  try {
+    const res = await fetch(esolatUrl, { mode: 'cors' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data?.prayerTime?.[0]) return data;
   } catch (_) {
-    // Direct fetch failed — fall through to proxy
+    // Fall through to proxy
   }
 
-  // Attempt 2: allorigins CORS proxy (works on GitHub Pages)
-  const proxyUrl = CORS_PROXY + encodeURIComponent(apiUrl);
-  const proxyRes = await fetch(proxyUrl);
+  // Attempt 3: allorigins CORS proxy (last resort)
+  const proxyUrl  = CORS_PROXY + encodeURIComponent(esolatUrl);
+  const proxyRes  = await fetch(proxyUrl);
   if (!proxyRes.ok) throw new Error('Proxy HTTP ' + proxyRes.status);
   const proxyData = await proxyRes.json();
-  const inner = JSON.parse(proxyData.contents);
+  const inner     = JSON.parse(proxyData.contents);
   if (!inner?.prayerTime?.[0]) throw new Error('No prayer data in proxy response');
   return inner;
 }
