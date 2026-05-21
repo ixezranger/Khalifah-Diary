@@ -479,13 +479,19 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 
 .prayer-cards-inner {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(8, 1fr);
   gap: 16px;
   width: 100%;
 }
-.prayer-cards-inner .prayer-card:last-child {
-  grid-column: 2 / 3;
-}
+/* Row 1: 4 cards each span 2 of 8 columns → fills the row */
+.prayer-cards-inner .prayer-card:nth-child(1) { grid-column: span 2; }
+.prayer-cards-inner .prayer-card:nth-child(2) { grid-column: span 2; }
+.prayer-cards-inner .prayer-card:nth-child(3) { grid-column: span 2; }
+.prayer-cards-inner .prayer-card:nth-child(4) { grid-column: span 2; }
+/* Row 2: 3 cards — start at col 2 so they sit centred (cols 2-3, 4-5, 6-7) */
+.prayer-cards-inner .prayer-card:nth-child(5) { grid-column: 2 / 4; }
+.prayer-cards-inner .prayer-card:nth-child(6) { grid-column: 4 / 6; }
+.prayer-cards-inner .prayer-card:nth-child(7) { grid-column: 6 / 8; }
 .prayer-placeholder {
   grid-column: 1 / -1;
   text-align: center;
@@ -1058,7 +1064,15 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   .prayer-cards-inner {
     grid-template-columns: repeat(2, 1fr);
   }
-  .prayer-cards-inner .prayer-card:last-child {
+  /* Reset desktop nth-child spans for mobile 2-col layout */
+  .prayer-cards-inner .prayer-card:nth-child(1),
+  .prayer-cards-inner .prayer-card:nth-child(2),
+  .prayer-cards-inner .prayer-card:nth-child(3),
+  .prayer-cards-inner .prayer-card:nth-child(4),
+  .prayer-cards-inner .prayer-card:nth-child(5),
+  .prayer-cards-inner .prayer-card:nth-child(6) { grid-column: span 1; }
+  /* Last card (Isyak) centred across both columns */
+  .prayer-cards-inner .prayer-card:nth-child(7) {
     grid-column: 1 / -1 !important;
     max-width: 50%;
     margin: 0 auto;
