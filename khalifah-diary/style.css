@@ -587,7 +587,7 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 .pw-divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-  margin-bottom: 24px;
+  margin-bottom: 8px;
 }
 
 /* ─── Timeline strip ─── */
@@ -595,8 +595,10 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   display: flex;
   justify-content: center;
   gap: 0;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   overflow-x: auto;
+  overflow-y: visible;
+  padding-top: 10px;   /* room for the elevated next-prayer card */
   padding-bottom: 4px;
   scrollbar-width: none;
 }
@@ -706,18 +708,44 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   transition: width 1s linear;
 }
 
-/* ─── Bearing ─── */
+/* ─── Qiblat compass ─── */
 .pw-bearing {
-  text-align: center;
-  font-size: 0.82rem;
-  color: var(--text-secondary);
+  justify-content: center;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin-top: 4px;
+}
+.qiblat-wrap {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding-top: 4px;
+  gap: 16px;
 }
-.pw-bearing-icon { font-size: 1rem; }
+.qiblat-compass { flex-shrink: 0; }
+.qiblat-svg { display: block; }
+.qiblat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.qiblat-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+.qiblat-dir {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.qiblat-deg {
+  font-size: 0.75rem;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
 
 /* ─── Placeholder / Loading (outside widget) ─── */
 .prayer-placeholder {

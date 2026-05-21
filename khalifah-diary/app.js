@@ -689,7 +689,64 @@ async function fetchPrayerTimes(zone) {
     const bearing = data.bearing || '';
     if (bearing) {
       const info = document.getElementById('bearingInfo');
-      document.getElementById('bearingText').textContent = 'Arah Kiblat: ' + bearing;
+
+      // Parse degrees from strings like "291° 6′ 16″" or "291.1"
+      const degMatch = bearing.match(/(\d+)[°\s]/);
+      const deg = degMatch ? parseFloat(degMatch[1]) : parseFloat(bearing);
+
+      // Compass rose — 16-point
+      const dirs = [
+        'Utara','Utara-Timur Laut','Timur Laut','Timur-Timur Laut',
+        'Timur','Timur-Tenggara','Tenggara','Selatan-Tenggara',
+        'Selatan','Selatan-Barat Daya','Barat Daya','Barat-Barat Daya',
+        'Barat','Barat-Barat Laut','Barat Laut','Utara-Barat Laut'
+      ];
+      const compassDir = dirs[Math.round(deg / 22.5) % 16];
+
+      // Short cardinal for display
+      const cardinals = ['U','UTL','TL','TTL','T','TTG','TG','STG',
+                         'S','SBD','BD','BBD','B','BBL','BL','UBL'];
+      const short = cardinals[Math.round(deg / 22.5) % 16];
+
+      info.innerHTML = `
+        <div class="qiblat-wrap">
+          <div class="qiblat-compass">
+            <svg viewBox="0 0 60 60" width="60" height="60" class="qiblat-svg">
+              <circle cx="30" cy="30" r="28" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" fill="none"/>
+              <circle cx="30" cy="30" r="22" stroke="rgba(255,255,255,0.04)" stroke-width="1" fill="none"/>
+              <!-- Cardinal ticks -->
+              <line x1="30" y1="2" x2="30" y2="8" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+              <line x1="30" y1="52" x2="30" y2="58" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+              <line x1="2" y1="30" x2="8" y2="30" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+              <line x1="52" y1="30" x2="58" y2="30" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+              <!-- N label -->
+              <text x="30" y="16" text-anchor="middle" font-size="6" fill="rgba(255,255,255,0.4)" font-family="Inter,sans-serif" font-weight="600">U</text>
+              <!-- Kaabah needle pointing to Qiblat -->
+              <g transform="rotate(${deg.toFixed(1)}, 30, 30)">
+                <polygon points="30,6 33,30 30,26 27,30" fill="url(#qiblatGrad)" filter="url(#qiblatGlow)"/>
+                <polygon points="30,54 33,30 30,34 27,30" fill="rgba(255,255,255,0.15)"/>
+              </g>
+              <!-- Centre dot -->
+              <circle cx="30" cy="30" r="3" fill="#38d9a9" opacity="0.9"/>
+              <defs>
+                <linearGradient id="qiblatGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#f4c542"/>
+                  <stop offset="100%" stop-color="#e8a020"/>
+                </linearGradient>
+                <filter id="qiblatGlow">
+                  <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+            </svg>
+          </div>
+          <div class="qiblat-info">
+            <span class="qiblat-label">Arah Kiblat</span>
+            <span class="qiblat-dir">${compassDir}</span>
+            <span class="qiblat-deg">${isNaN(deg) ? bearing : deg.toFixed(0) + '° ' + short}</span>
+          </div>
+        </div>
+      `;
       info.style.display = 'flex';
     }
 
