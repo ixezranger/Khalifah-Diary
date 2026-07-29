@@ -1199,7 +1199,7 @@ function initLetterSplits() {
       `<span class="char" style="transition-delay:${i * 0.045}s">${ch === ' ' ? '&nbsp;' : ch}</span>`
     ).join('');
   });
-  gsap.to('.hadith-section', { backgroundPositionY: '30%', ease: "none", scrollTrigger: { trigger: '.hadith-section', start: 'top bottom', end: 'bottom top', scrub: true } });
+  
 }
 
 // ═══════════════════════════════════════════
