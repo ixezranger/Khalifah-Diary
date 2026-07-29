@@ -380,6 +380,23 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 }
 .reveal.revealed { opacity: 1; transform: translateY(0); }
 
+/* Section header: parent slides in but does NOT fade — chars own opacity entirely.
+   This prevents the parent's 0→1 opacity from making completed chars visible at
+   partial opacity while later chars are still animating (left chars "bleeding through"). */
+.section-header.reveal {
+  opacity: 1;
+  transform: translateY(30px);
+  transition: transform 0.6s ease;
+}
+.section-header.revealed { transform: translateY(0); }
+
+/* Section subtitle: hidden initially; fades in after title chars complete */
+.section-header .section-subtitle {
+  opacity: 0;
+  transition: opacity 0.5s ease 0.5s;
+}
+.section-header.revealed .section-subtitle { opacity: 1; }
+
 /* ══════════════════════════════════════════════════
    COUNTDOWN
 ══════════════════════════════════════════════════ */
@@ -1296,10 +1313,12 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 .section-title .char {
   display: inline-block;
   opacity: 0;
-  transition: opacity 0.35s ease;
+  transform: translateY(14px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 .section-header.revealed .section-title .char {
   opacity: 1;
+  transform: translateY(0);
 }
 
 /* ══════════════════════════════════════════════════
