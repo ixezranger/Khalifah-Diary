@@ -369,6 +369,9 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 10px;
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(8px);
 }
 .section-subtitle { color: var(--text-secondary); font-size: 0.95rem; }
 
@@ -380,9 +383,7 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 }
 .reveal.revealed { opacity: 1; transform: translateY(0); }
 
-/* Section header: parent slides in but does NOT fade — chars own opacity entirely.
-   This prevents the parent's 0→1 opacity from making completed chars visible at
-   partial opacity while later chars are still animating (left chars "bleeding through"). */
+/* Section header: slides up on reveal; title & subtitle handle their own opacity */
 .section-header.reveal {
   opacity: 1;
   transform: translateY(30px);
@@ -390,10 +391,10 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 }
 .section-header.revealed { transform: translateY(0); }
 
-/* Section subtitle: hidden initially; fades in after title chars complete */
+/* Subtitle: hidden initially; fades in after title animation */
 .section-header .section-subtitle {
   opacity: 0;
-  transition: opacity 0.5s ease 0.5s;
+  transition: opacity 0.5s ease 0.6s;
 }
 .section-header.revealed .section-subtitle { opacity: 1; }
 
@@ -1308,43 +1309,50 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 }
 
 /* ══════════════════════════════════════════════════
-   SECTION TITLE WORD-BY-WORD ANIMATION
+   SECTION TITLE – BLUR-CLEAR REVEAL ANIMATION
 ══════════════════════════════════════════════════ */
-.section-title .char {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+@keyframes sectionTitleIn {
+  from { opacity: 0; filter: blur(6px); transform: translateY(8px); }
+  to   { opacity: 1; filter: blur(0);   transform: translateY(0); }
 }
-.section-header.revealed .section-title .char {
-  opacity: 1;
-  transform: translateY(0);
+.section-header.revealed .section-title {
+  animation: sectionTitleIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* ══════════════════════════════════════════════════
-   BORDER GLOW – HADITH CARD & CALENDAR
+   MOVING BORDER LIGHT – HADITH CARD & CALENDAR
+   A bright blue-green spot travels along the border.
+   Uses CSS @property to interpolate the conic angle.
 ══════════════════════════════════════════════════ */
-@keyframes borderGlow {
-  0%, 100% {
-    border-color: rgba(46,168,213,0.5);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4),
-                inset 0 0 50px rgba(46,168,213,0.07),
-                0 0 22px rgba(46,168,213,0.12);
-  }
-  50% {
-    border-color: rgba(60,207,145,0.6);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4),
-                inset 0 0 55px rgba(60,207,145,0.09),
-                0 0 28px rgba(60,207,145,0.16);
-  }
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0turn;
+  inherits: false;
+}
+@keyframes borderSpin {
+  to { --border-angle: 1turn; }
 }
 
-.hadith-card.active {
-  animation: borderGlow 5s ease-in-out infinite;
-}
+.hadith-card.active,
 .calendar-wrapper {
-  animation: borderGlow 5s ease-in-out infinite;
+  --border-angle: 0turn;
+  border: 1.5px solid transparent;
+  background:
+    rgba(255,255,255,0.06) padding-box,
+    conic-gradient(
+      from var(--border-angle),
+      rgba(46,168,213,0)    0%,
+      rgba(46,168,213,0)   33%,
+      rgba(46,168,213,0.5) 40%,
+      rgba(46,168,213,1)   45%,
+      rgba(60,207,145,1)   50%,
+      rgba(46,168,213,1)   55%,
+      rgba(46,168,213,0.5) 60%,
+      rgba(46,168,213,0)   67%,
+      rgba(46,168,213,0)  100%
+    ) border-box;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  animation: borderSpin 4s linear infinite;
 }
 
 /* ══════════════════════════════════════════════════

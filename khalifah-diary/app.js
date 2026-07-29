@@ -1191,17 +1191,6 @@ function initRipple() {
   });
 }
 
-// ═══════════════════════════════════════════
-// SECTION TITLE WORD-BY-WORD ANIMATION
-// ═══════════════════════════════════════════
-function initLetterSplits() {
-  document.querySelectorAll('.section-title').forEach(el => {
-    const words = el.textContent.trim().split(/\s+/);
-    el.innerHTML = words.map((word, i) =>
-      `<span class="char" style="transition-delay:${i * 0.2}s">${word}</span>`
-    ).join(' ');
-  });
-}
 
 // ═══════════════════════════════════════════
 // TOAST
@@ -1225,7 +1214,6 @@ function showToast(msg) {
 // ═══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   initParticles();
-  initLetterSplits();
   initStars();
   initNavbar();
   initRegionSelector();
