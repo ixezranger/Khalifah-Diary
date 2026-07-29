@@ -402,7 +402,8 @@ function hijriDay(date) {
 }
 
 function hijriMonthName(year, month) {
-  const mid = new Date(year, month, 15);
+  // Use day 20 to pick the Hijri month that covers the majority of the Gregorian month
+  const mid = new Date(year, month, 20);
   const h = toHijriMY(mid);
   return `${HIJRI_MONTHS[h.month - 1]} ${h.year} H`;
 }
@@ -1191,16 +1192,15 @@ function initRipple() {
 }
 
 // ═══════════════════════════════════════════
-// SECTION TITLE LETTER-BY-LETTER ANIMATION
+// SECTION TITLE WORD-BY-WORD ANIMATION
 // ═══════════════════════════════════════════
 function initLetterSplits() {
   document.querySelectorAll('.section-title').forEach(el => {
-    const text = el.textContent;
-    el.innerHTML = text.split('').map((ch, i) =>
-      `<span class="char" style="transition-delay:${i * 0.045}s">${ch === ' ' ? '&nbsp;' : ch}</span>`
-    ).join('');
+    const words = el.textContent.trim().split(/\s+/);
+    el.innerHTML = words.map((word, i) =>
+      `<span class="char" style="transition-delay:${i * 0.2}s">${word}</span>`
+    ).join(' ');
   });
-  
 }
 
 // ═══════════════════════════════════════════

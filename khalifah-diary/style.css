@@ -898,7 +898,7 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 }
 .hadith-track {
   position: relative;
-  overflow: hidden;
+  overflow: clip; /* clips children but lets box-shadow escape to show border glow */
   min-height: 320px;
 }
 .hadith-card {
@@ -1308,17 +1308,43 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 }
 
 /* ══════════════════════════════════════════════════
-   SECTION TITLE LETTER ANIMATION
+   SECTION TITLE WORD-BY-WORD ANIMATION
 ══════════════════════════════════════════════════ */
 .section-title .char {
   display: inline-block;
   opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transform: translateY(20px);
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .section-header.revealed .section-title .char {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* ══════════════════════════════════════════════════
+   BORDER GLOW – HADITH CARD & CALENDAR
+══════════════════════════════════════════════════ */
+@keyframes borderGlow {
+  0%, 100% {
+    border-color: rgba(46,168,213,0.5);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4),
+                inset 0 0 50px rgba(46,168,213,0.07),
+                0 0 22px rgba(46,168,213,0.12);
+  }
+  50% {
+    border-color: rgba(60,207,145,0.6);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4),
+                inset 0 0 55px rgba(60,207,145,0.09),
+                0 0 28px rgba(60,207,145,0.16);
+  }
+}
+
+.hadith-card.active {
+  animation: borderGlow 5s ease-in-out infinite;
+}
+.calendar-wrapper {
+  animation: borderGlow 5s ease-in-out infinite;
 }
 
 /* ══════════════════════════════════════════════════
