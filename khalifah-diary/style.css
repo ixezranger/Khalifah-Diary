@@ -53,6 +53,7 @@ img { max-width: 100%; display: block; }
    GLASS CARD
 ══════════════════════════════════════════════════ */
 .glass-card {
+  position: relative;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -1320,39 +1321,50 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 }
 
 /* ══════════════════════════════════════════════════
-   MOVING BORDER LIGHT – HADITH CARD & CALENDAR
-   A bright blue-green spot travels along the border.
-   Uses CSS @property to interpolate the conic angle.
+   ORBIT BORDER LIGHT – ALL GLASS CARDS (on hover)
+   A blue-green light spot travels along the border.
+   Uses @property + mask trick; card background/
+   backdrop-filter remain completely untouched.
+   Technique mirrors the "Garis Masa" orbit button.
 ══════════════════════════════════════════════════ */
-@property --border-angle {
+@property --oa {
   syntax: '<angle>';
-  initial-value: 0turn;
+  initial-value: 0deg;
   inherits: false;
 }
-@keyframes borderSpin {
-  to { --border-angle: 1turn; }
+@keyframes orbitSpin {
+  to { --oa: 360deg; }
 }
 
-.hadith-card.active,
-.calendar-wrapper {
-  --border-angle: 0turn;
-  border: 1.5px solid transparent;
-  background:
-    rgba(255,255,255,0.06) padding-box,
-    conic-gradient(
-      from var(--border-angle),
-      rgba(46,168,213,0)    0%,
-      rgba(46,168,213,0)   33%,
-      rgba(46,168,213,0.5) 40%,
-      rgba(46,168,213,1)   45%,
-      rgba(60,207,145,1)   50%,
-      rgba(46,168,213,1)   55%,
-      rgba(46,168,213,0.5) 60%,
-      rgba(46,168,213,0)   67%,
-      rgba(46,168,213,0)  100%
-    ) border-box;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  animation: borderSpin 4s linear infinite;
+.glass-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--oa),
+    transparent            0 68%,
+    rgba(46,168,213,0.4)  76%,
+    rgba(46,168,213,0.9)  83%,
+    rgba(56,217,169,1)    88%,
+    rgba(46,168,213,0.9)  93%,
+    rgba(46,168,213,0.4)  97%,
+    transparent           100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+.glass-card:hover::after {
+  opacity: 1;
+  animation: orbitSpin 2s linear infinite;
 }
 
 /* ══════════════════════════════════════════════════
