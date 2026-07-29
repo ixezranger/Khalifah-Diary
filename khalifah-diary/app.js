@@ -1235,3 +1235,109 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchPrayerTimes('KTN01');
   }, 600);
 });
+
+// ═══════════════════════════════════════════
+// CUSTOM CURSOR LIGHT
+// Smooth-lerp glowing dot that follows the mouse.
+// Desktop / fine-pointer only.
+// ═══════════════════════════════════════════
+(function () {
+  if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  const cur = document.createElement('div');
+  cur.id = 'cursorLight';
+  document.body.appendChild(cur);
+  const SEL = 'a,button,[role="button"],.hadith-btn,.cal-nav-btn,.nav-link,.btn-primary,label,input,select';
+  let tx = 0, ty = 0, x = 0, y = 0, entered = false;
+  addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    tx = e.clientX; ty = e.clientY;
+    if (!entered) { entered = true; x = tx; y = ty; cur.classList.add('on'); }
+    cur.classList.toggle('hover', !!(e.target && e.target.closest && e.target.closest(SEL)));
+  }, { passive: true });
+  document.addEventListener('mouseleave',  () => cur.classList.remove('on'));
+  document.addEventListener('mouseenter',  () => { if (entered) cur.classList.add('on'); });
+  addEventListener('pointerdown',   e => { if (e.pointerType !== 'touch') cur.classList.add('press'); });
+  addEventListener('pointerup',     () => cur.classList.remove('press'));
+  addEventListener('pointercancel', () => cur.classList.remove('press'));
+  (function tick() {
+    x += (tx - x) * 0.32;
+    y += (ty - y) * 0.32;
+    cur.style.transform = 'translate3d(' + (x - 18) + 'px,' + (y - 18) + 'px,0)';
+    requestAnimationFrame(tick);
+  })();
+})();
+
+// ═══════════════════════════════════════════
+// CURSOR PARTICLE TRAIL (blue-green palette)
+// Tiny glowing particles emitted from the cursor
+// as it moves, fading out with velocity drift.
+// ═══════════════════════════════════════════
+(function () {
+  if (matchMedia('(pointer: coarse)').matches) return;
+  const c = document.createElement('canvas');
+  c.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9998';
+  document.body.appendChild(c);
+  const ctx = c.getContext('2d');
+  let W = 0, H = 0, rect = null;
+  const ps = [];
+
+  function size() {
+    rect = c.getBoundingClientRect();
+    W = rect.width  || document.documentElement.clientWidth;
+    H = rect.height || document.documentElement.clientHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    c.width  = Math.max(1, Math.round(W * dpr));
+    c.height = Math.max(1, Math.round(H * dpr));
+    ctx.setTransform(c.width / W, 0, 0, c.height / H, 0, 0);
+  }
+  size();
+  addEventListener('resize', size);
+  if (window.ResizeObserver) new ResizeObserver(size).observe(c);
+
+  let fx = null, fy = null;
+  addEventListener('pointermove', e => {
+    if (e.pointerType !== 'touch') { fx = e.clientX; fy = e.clientY; }
+  }, { passive: true });
+
+  let curEl = null, px = null, py = null;
+  function emit(cx, cy) {
+    for (let i = 0; i < 2; i++) ps.push({
+      x: cx + (Math.random() - 0.5) * 4,
+      y: cy + (Math.random() - 0.5) * 4,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: (Math.random() - 0.5) * 0.8 - 0.25,
+      l: 1,
+      r: 0.7 + Math.random() * 1.5,
+      g: Math.random() < 0.4
+    });
+    if (ps.length > 130) ps.splice(0, ps.length - 130);
+  }
+
+  (function loop() {
+    if (!curEl) curEl = document.getElementById('cursorLight');
+    if (!rect)  rect  = c.getBoundingClientRect();
+    let cx = null, cy = null;
+    if (curEl && curEl.classList.contains('on')) {
+      const d = curEl.getBoundingClientRect();
+      if (d.width) { cx = d.left + d.width / 2 - rect.left; cy = d.top + d.height / 2 - rect.top; }
+    } else if (!curEl && fx !== null) { cx = fx - rect.left; cy = fy - rect.top; }
+
+    if (cx !== null) {
+      if (px !== null) { const dx = cx - px, dy = cy - py; if (dx * dx + dy * dy > 0.35) emit(cx, cy); }
+      px = cx; py = cy;
+    } else { px = py = null; }
+
+    ctx.clearRect(0, 0, W, H);
+    for (let i = ps.length - 1; i >= 0; i--) {
+      const p = ps[i];
+      p.x += p.vx; p.y += p.vy; p.l -= 0.022;
+      if (p.l <= 0) { ps.splice(i, 1); continue; }
+      // blue-green palette: teal for 40% of particles, accent-blue for 60%
+      ctx.fillStyle = (p.g ? 'rgba(56,217,169,' : 'rgba(46,168,213,') + (p.l * 0.55).toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * (0.5 + p.l * 0.8), 0, 6.283);
+      ctx.fill();
+    }
+    requestAnimationFrame(loop);
+  })();
+})();
