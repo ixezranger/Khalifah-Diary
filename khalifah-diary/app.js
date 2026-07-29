@@ -1067,11 +1067,12 @@ function initNavbar() {
 // ═══════════════════════════════════════════
 function initGSAP() {
   if (!window.gsap) return;
-  // Hero entrance animations only – no ScrollTrigger (avoids CSP eval() errors)
-  gsap.to('#heroDateBlock',   { opacity: 1, y: 0, duration: 0.8, delay: 0.3,  ease: "power3.out" });
-  gsap.to('.hero-title',      { opacity: 1, y: 0, duration: 0.9, delay: 0.55, ease: "power3.out" });
-  gsap.to('.hero-subtitle',   { opacity: 1,       duration: 0.7, delay: 0.8,  ease: "power2.out" });
-  gsap.to('.region-selector', { opacity: 1, y: 0, duration: 0.7, delay: 1,    ease: "power3.out" });
+  // gsap.from() animates FROM hidden → natural visible state (correct entrance pattern)
+  // No CSS opacity:0 needed — elements render visible if GSAP fails to load
+  gsap.from('#heroDateBlock',   { opacity: 0, y: -20, duration: 0.8, delay: 0.3,  ease: "power3.out", clearProps: "opacity,transform" });
+  gsap.from('.hero-title',      { opacity: 0, y: 30,  duration: 0.9, delay: 0.55, ease: "power3.out", clearProps: "opacity,transform" });
+  gsap.from('.hero-subtitle',   { opacity: 0,         duration: 0.7, delay: 0.8,  ease: "power2.out", clearProps: "opacity" });
+  gsap.from('.region-selector', { opacity: 0, y: 20,  duration: 0.7, delay: 1,    ease: "power3.out", clearProps: "opacity,transform" });
 }
 
 // Section reveals via IntersectionObserver (CSP-safe, replaces ScrollTrigger)

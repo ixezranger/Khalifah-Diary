@@ -232,8 +232,6 @@ img { max-width: 100%; display: block; }
   gap: 6px;
   padding: 16px 28px;
   margin-bottom: 28px;
-  opacity: 0;
-  transform: translateY(-20px);
 }
 .hero-hijri {
   font-family: var(--font-arabic);
@@ -260,8 +258,6 @@ img { max-width: 100%; display: block; }
 }
 .hero-title {
   margin-bottom: 12px;
-  opacity: 0;
-  transform: translateY(30px);
 }
 .hero-title-top {
   display: block;
@@ -285,12 +281,9 @@ img { max-width: 100%; display: block; }
   color: var(--text-secondary);
   font-size: 1rem;
   margin-bottom: 36px;
-  opacity: 0;
 }
 .region-selector {
   padding: 24px;
-  opacity: 0;
-  transform: translateY(20px);
 }
 .region-label {
   display: block;
