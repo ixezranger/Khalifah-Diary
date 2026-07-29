@@ -1303,12 +1303,10 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 .section-title .char {
   display: inline-block;
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  transition: opacity 0.35s ease;
 }
 .section-header.revealed .section-title .char {
   opacity: 1;
-  transform: translateY(0);
 }
 
 /* ══════════════════════════════════════════════════
