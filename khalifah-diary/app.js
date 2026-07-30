@@ -385,35 +385,63 @@ function toHijri(year, month, day) {
   return { year: yearH, month: monthH, day: dayH };
 }
 
-// Malaysia JAKIM rukyah-based Hijri month starts
+// Malaysia JAKIM takwim Hijri month starts
 // [greg_year, greg_month(1-based), greg_day, hijri_year, hijri_month(1-based)]
-// Anchored to confirmed official dates; estimated months filled by derivation.
+//
+// Anchored to JAKIM-confirmed / observed dates (marked below); the remaining
+// months are filled from the Istilahi (tabular) calculation, which agrees with
+// every confirmed anchor. Verified: every month is 29-30 days and every year
+// 354-355 days, so the chain cannot drift out of step.
 const MY_HIJRI_MONTH_STARTS = [
-  [2025,  6, 28, 1447,  1],  // 1 Muharram 1447H
-  [2025,  7, 28, 1447,  2],  // 1 Safar 1447H
-  [2025,  8, 26, 1447,  3],  // 1 Rabiulawal 1447H
-  [2025,  9, 25, 1447,  4],  // 1 Rabiulakhir 1447H
-  [2025, 10, 24, 1447,  5],  // 1 Jamadilawal 1447H
-  [2025, 11, 23, 1447,  6],  // 1 Jamadilakhir 1447H
-  [2025, 12, 22, 1447,  7],  // 1 Rajab 1447H
-  [2026,  1, 21, 1447,  8],  // 1 Shaaban 1447H
-  [2026,  2, 19, 1447,  9],  // 1 Ramadan 1447H  ← 17 Ramadan = Nuzul Al-Quran Mar 7
-  [2026,  3, 21, 1447, 10],  // 1 Syawal 1447H   ← Hari Raya Puasa (confirmed)
+  [2025,  1,  1, 1446,  7],  // 1 Rejab 1446H
+  [2025,  1, 31, 1446,  8],  // 1 Syaaban 1446H
+  [2025,  3,  1, 1446,  9],  // 1 Ramadan 1446H
+  [2025,  3, 31, 1446, 10],  // 1 Syawal 1446H      <- Hari Raya Puasa 2025 (disahkan)
+  [2025,  4, 29, 1446, 11],  // 1 Zulkaedah 1446H
+  [2025,  5, 29, 1446, 12],  // 1 Zulhijjah 1446H   <- 10 ZH = Hari Raya Qurban 7 Jun 2025
+  [2025,  6, 27, 1447,  1],  // 1 Muharram 1447H    <- Awal Muharram (JAKIM, disahkan)
+  [2025,  7, 27, 1447,  2],  // 1 Safar 1447H
+  [2025,  8, 25, 1447,  3],  // 1 Rabiulawal 1447H  <- 12 RA = Maulidur Rasul 5 Sep 2025
+  [2025,  9, 24, 1447,  4],  // 1 Rabiulakhir 1447H
+  [2025, 10, 23, 1447,  5],  // 1 Jamadilawal 1447H
+  [2025, 11, 22, 1447,  6],  // 1 Jamadilakhir 1447H
+  [2025, 12, 21, 1447,  7],  // 1 Rejab 1447H
+  [2026,  1, 20, 1447,  8],  // 1 Syaaban 1447H
+  [2026,  2, 19, 1447,  9],  // 1 Ramadan 1447H     <- 17 Ram = Nuzul Al-Quran 7 Mac 2026
+  [2026,  3, 21, 1447, 10],  // 1 Syawal 1447H      <- Hari Raya Puasa 2026 (disahkan)
   [2026,  4, 19, 1447, 11],  // 1 Zulkaedah 1447H
-  [2026,  5, 18, 1447, 12],  // 1 Zulhijjah 1447H ← confirmed (today)
-  [2026,  6, 17, 1448,  1],  // 1 Muharram 1448H  ← Awal Muharam (confirmed)
-  [2026,  7, 16, 1448,  2],  // 1 Safar 1448H
-  [2026,  8, 14, 1448,  3],  // 1 Rabiulawal 1448H ← 12 Rabiulawal = Maulidur Rasul Aug 25
-  [2026,  9, 13, 1448,  4],  // 1 Rabiulakhir 1448H
-  [2026, 10, 12, 1448,  5],  // 1 Jamadilawal 1448H
-  [2026, 11, 11, 1448,  6],  // 1 Jamadilakhir 1448H
-  [2026, 12, 10, 1448,  7],  // 1 Rajab 1448H
-  [2027,  1,  9, 1448,  8],  // 1 Shaaban 1448H
-  [2027,  2,  7, 1448,  9],  // 1 Ramadan 1448H
+  [2026,  5, 18, 1447, 12],  // 1 Zulhijjah 1447H   <- 10 ZH = Hari Raya Qurban 27 Mei 2026
+  [2026,  6, 17, 1448,  1],  // 1 Muharram 1448H    <- Awal Muharram 2026 (disahkan)
+  [2026,  7, 17, 1448,  2],  // 1 Safar 1448H       <- 30 Jul 2026 = 14 Safar (takwim JAKIM)
+  [2026,  8, 15, 1448,  3],  // 1 Rabiulawal 1448H  <- 12 RA = 26 Ogos 2026
+  [2026,  9, 14, 1448,  4],  // 1 Rabiulakhir 1448H
+  [2026, 10, 13, 1448,  5],  // 1 Jamadilawal 1448H
+  [2026, 11, 12, 1448,  6],  // 1 Jamadilakhir 1448H
+  [2026, 12, 11, 1448,  7],  // 1 Rejab 1448H
+  [2027,  1, 10, 1448,  8],  // 1 Syaaban 1448H
+  [2027,  2,  8, 1448,  9],  // 1 Ramadan 1448H
+  [2027,  3, 10, 1448, 10],  // 1 Syawal 1448H
+  [2027,  4,  8, 1448, 11],  // 1 Zulkaedah 1448H
+  [2027,  5,  8, 1448, 12],  // 1 Zulhijjah 1448H
+  [2027,  6,  6, 1449,  1],  // 1 Muharram 1449H
+  [2027,  7,  6, 1449,  2],  // 1 Safar 1449H
+  [2027,  8,  4, 1449,  3],  // 1 Rabiulawal 1449H
+  [2027,  9,  3, 1449,  4],  // 1 Rabiulakhir 1449H
+  [2027, 10,  2, 1449,  5],  // 1 Jamadilawal 1449H
+  [2027, 11,  1, 1449,  6],  // 1 Jamadilakhir 1449H
+  [2027, 11, 30, 1449,  7],  // 1 Rejab 1449H
+  [2027, 12, 30, 1449,  8],  // 1 Syaaban 1449H
+  [2028,  1, 28, 1449,  9],  // 1 Ramadan 1449H
+  [2028,  2, 27, 1449, 10],  // 1 Syawal 1449H
+  [2028,  3, 27, 1449, 11],  // 1 Zulkaedah 1449H
+  [2028,  4, 26, 1449, 12],  // 1 Zulhijjah 1449H
 ];
 
 function toHijriMY(date) {
-  const ms = date.getTime();
+  // Normalise to local midnight first. Differencing raw timestamps leaves a
+  // fractional day whenever `date` carries a time of day, and rounding that
+  // pushed the Hijri date forward a day every afternoon.
+  const ms = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
   for (let i = MY_HIJRI_MONTH_STARTS.length - 1; i >= 0; i--) {
     const [sy, sm, sd, hy, hm] = MY_HIJRI_MONTH_STARTS[i];
     const startMs = new Date(sy, sm - 1, sd).getTime();
