@@ -339,11 +339,39 @@ function to12Hour(time24) {
 // ═══════════════════════════════════════════
 // HIJRI DATE CALCULATION
 // ═══════════════════════════════════════════
-function toHijri(year, month, day) {
-  let jd = Math.floor((1461 * (year + 4800 + Math.floor((month - 14) / 12))) / 4)
-    + Math.floor((367 * (month - 2 - 12 * (Math.floor((month - 14) / 12)))) / 12)
-    - Math.floor((3 * (Math.floor((year + 4900 + Math.floor((month - 14) / 12)) / 100))) / 4)
+// Gregorian → Julian Day Number.
+// NOTE: (month-14)/12 must TRUNCATE toward zero, not floor. Using Math.floor
+// here shifts every date except February by 1–2 days.
+function gregToJD(year, month, day) {
+  const a = Math.trunc((month - 14) / 12);
+  return Math.floor((1461 * (year + 4800 + a)) / 4)
+    + Math.floor((367 * (month - 2 - 12 * a)) / 12)
+    - Math.floor((3 * Math.floor((year + 4900 + a) / 100)) / 4)
     + day - 32075;
+}
+
+// Hijri (Istilahi / tabular) → Julian Day Number. Exact inverse of toHijri().
+function hijriToJD(hy, hm, hd) {
+  return Math.floor((11 * hy + 3) / 30) + 354 * hy + 30 * hm
+    - Math.floor((hm - 1) / 2) + hd + 1948440 - 385;
+}
+
+const JD_UNIX_EPOCH = 2440588; // JD of 1970-01-01
+
+function jdToGregParts(jd) {
+  const dt = new Date((jd - JD_UNIX_EPOCH) * 86400000);
+  return { year: dt.getUTCFullYear(), month: dt.getUTCMonth() + 1, day: dt.getUTCDate() };
+}
+
+// Days in a Gregorian / Hijri month (1-based month)
+function gregMonthLength(y, m) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+function hijriMonthLength(y, m) {
+  const next = m === 12 ? hijriToJD(y + 1, 1, 1) : hijriToJD(y, m + 1, 1);
+  return next - hijriToJD(y, m, 1);
+}
+
+function toHijri(year, month, day) {
+  let jd = gregToJD(year, month, day);
   let l = jd - 1948440 + 10632;
   let n = Math.floor((l - 1) / 10631);
   l = l - 10631 * n + 354;
@@ -1210,6 +1238,141 @@ function showToast(msg) {
 }
 
 // ═══════════════════════════════════════════
+// KALKULATOR UMUR — MILADI / HIJRI (ISTILAHI)
+// Hijri figures use the tabular (Istilahi/hisab)
+// calendar, same basis as JAKIM e-Falak. May differ
+// by ±1 day from rukyah-confirmed dates.
+// ═══════════════════════════════════════════
+function parseDateInput(value) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '');
+  if (!m) return null;
+  const year = +m[1], month = +m[2], day = +m[3];
+  if (month < 1 || month > 12 || day < 1 || day > gregMonthLength(year, month)) return null;
+  return { year, month, day, jd: gregToJD(year, month, day) };
+}
+
+// Calendar difference in years/months/days, valid for any calendar given its
+// monthLength(y, m) and toJD(y, m, d).
+//
+// Works by advancing `from` a whole number of months (clamping the day to the
+// landing month's length, so 31 Jan + 1 month = 28/29 Feb) and measuring the
+// remainder in days. The two correction loops guarantee the anchor is the
+// latest whole-month step that still lands on or before `to`, which keeps
+// `days` non-negative — a plain "borrow one month" subtraction does not, e.g.
+// 31 Aug → 1 Mar borrows a 28-day February and underflows.
+function diffYMD(from, to, monthLength, toJD) {
+  const build = totalMonths => {
+    const seq = from.month - 1 + totalMonths;
+    const y = from.year + Math.floor(seq / 12);
+    const m = ((seq % 12) + 12) % 12 + 1;
+    const d = Math.min(from.day, monthLength(y, m));
+    return { jd: toJD(y, m, d) };
+  };
+
+  let months = (to.year - from.year) * 12 + (to.month - from.month);
+  if (to.day < from.day) months--;
+  while (months > 0 && build(months).jd > to.jd) months--;
+  while (build(months + 1).jd <= to.jd) months++;
+
+  return {
+    years:  Math.floor(months / 12),
+    months: months % 12,
+    days:   to.jd - build(months).jd
+  };
+}
+
+// Next anniversary strictly after refJD, clamped to the month's real length
+// (so 29 Feb / 30 Zulhijjah fall back to the last valid day).
+function nextAnniversary(birth, refJD, kind) {
+  const isHijri = kind === 'hijri';
+  const g = jdToGregParts(refJD);
+  const startYear = isHijri ? toHijri(g.year, g.month, g.day).year : g.year;
+  for (let y = startYear; y <= startYear + 3; y++) {
+    const len = isHijri ? hijriMonthLength(y, birth.month) : gregMonthLength(y, birth.month);
+    const day = Math.min(birth.day, len);
+    const jd  = isHijri ? hijriToJD(y, birth.month, day) : gregToJD(y, birth.month, day);
+    if (jd > refJD) return { jd, year: y, month: birth.month, day };
+  }
+  return null;
+}
+
+function initAgeCalculator() {
+  const birthEl = document.getElementById('umurBirth');
+  const refEl   = document.getElementById('umurRef');
+  const btn     = document.getElementById('umurCalcBtn');
+  if (!birthEl || !refEl || !btn) return;
+
+  const resultEl = document.getElementById('umurResult');
+  const errorEl  = document.getElementById('umurError');
+
+  // Default the reference date to today, and cap both inputs there.
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+  refEl.value = todayStr;
+  birthEl.max = todayStr;
+
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.style.display = 'block';
+    resultEl.style.display = 'none';
+  }
+
+  function renderNums(el, ymd) {
+    el.innerHTML = [['Tahun', ymd.years], ['Bulan', ymd.months], ['Hari', ymd.days]]
+      .map(([label, n]) =>
+        `<div class="umur-num"><span class="umur-num-v">${n}</span><span class="umur-num-l">${label}</span></div>`
+      ).join('');
+  }
+
+  function fmtGreg(p) { return `${p.day} ${MALAY_MONTHS[p.month - 1]} ${p.year}`; }
+  function fmtHijri(h) { return `${h.day} ${HIJRI_MONTHS[h.month - 1]} ${h.year}H`; }
+  function dayName(jd) { return MALAY_DAYS[((jd - JD_UNIX_EPOCH + 4) % 7 + 7) % 7]; }
+
+  function calculate() {
+    const birth = parseDateInput(birthEl.value);
+    const ref   = parseDateInput(refEl.value);
+    if (!birth) return showError('Sila masukkan tarikh lahir yang sah.');
+    if (!ref)   return showError('Sila masukkan tarikh kiraan yang sah.');
+    if (birth.jd > ref.jd) return showError('Tarikh lahir tidak boleh selepas tarikh kiraan.');
+
+    errorEl.style.display = 'none';
+
+    const birthH = toHijri(birth.year, birth.month, birth.day);
+    const refH   = toHijri(ref.year, ref.month, ref.day);
+    refH.jd = ref.jd; // same instant, expressed on the Hijri calendar
+
+    // Born
+    document.getElementById('umurBornDay').textContent     = dayName(birth.jd);
+    document.getElementById('umurBornMasihi').textContent  = fmtGreg(birth);
+    document.getElementById('umurBornHijri').textContent   = fmtHijri(birthH);
+
+    // Ages
+    renderNums(document.getElementById('umurMasihiNums'), diffYMD(birth, ref, gregMonthLength, gregToJD));
+    renderNums(document.getElementById('umurHijriNums'),  diffYMD(birthH, refH, hijriMonthLength, hijriToJD));
+
+    // Totals
+    const totalDays = ref.jd - birth.jd;
+    document.getElementById('umurTotalDays').textContent  = totalDays.toLocaleString('ms-MY') + ' hari';
+    document.getElementById('umurTotalWeeks').textContent = Math.floor(totalDays / 7).toLocaleString('ms-MY') + ' minggu';
+
+    const nextG = nextAnniversary(birth, ref.jd, 'greg');
+    const nextH = nextAnniversary(birthH, ref.jd, 'hijri');
+    document.getElementById('umurNextMasihi').textContent = nextG
+      ? `${fmtGreg(jdToGregParts(nextG.jd))} · ${nextG.jd - ref.jd} hari lagi` : '–';
+    document.getElementById('umurNextHijri').textContent = nextH
+      ? `${fmtHijri(nextH)} · ${nextH.jd - ref.jd} hari lagi` : '–';
+
+    resultEl.style.display = 'block';
+  }
+
+  btn.addEventListener('click', calculate);
+  [birthEl, refEl].forEach(el => {
+    el.addEventListener('change', () => { if (birthEl.value) calculate(); });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+  });
+}
+
+// ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
@@ -1219,6 +1382,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initRegionSelector();
   initHadith();
   initCalendar();
+  initAgeCalculator();
   updateClock();
   setInterval(updateClock, 1000);
   initRevealObserver();

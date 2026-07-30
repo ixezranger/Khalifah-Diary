@@ -355,6 +355,8 @@ select option { background: #0d1f3c; color: var(--text-primary); }
 .section {
   padding: 20px 24px;
   position: relative;
+  /* keep section titles clear of the 64px fixed navbar when jumped to via #anchor */
+  scroll-margin-top: 84px;
 }
 .section-inner {
   max-width: 1100px;
@@ -1402,6 +1404,207 @@ select option { background: #0d1f3c; color: var(--text-primary); }
   .cal-day { border-radius: 7px; }
   .day-num { font-size: 0.7rem; }
   .day-hijri { display: block; }
+}
+
+/* ══════════════════════════════════════════════════
+   KALKULATOR UMUR (MILADI / HIJRI ISTILAHI)
+══════════════════════════════════════════════════ */
+.umur-section { padding-bottom: 100px; }
+.umur-wrapper { padding: 28px; }
+
+/* ── Form ── */
+.umur-form {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.umur-field {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.umur-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+.umur-input {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color var(--transition), background var(--transition);
+}
+.umur-input:focus {
+  border-color: var(--accent);
+  background: rgba(46,168,213,0.1);
+}
+/* Recolour the native date picker indicator for the dark theme */
+.umur-input::-webkit-calendar-picker-indicator {
+  filter: invert(65%) sepia(30%) saturate(700%) hue-rotate(150deg);
+  cursor: pointer;
+}
+.umur-btn { flex: 0 0 auto; padding: 13px 28px; }
+
+.umur-error {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(230,90,90,0.12);
+  border: 1px solid rgba(230,90,90,0.35);
+  color: #ffb3b3;
+  font-size: 0.88rem;
+}
+
+/* ── Results ── */
+.umur-result {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--glass-border);
+  animation: umurIn 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes umurIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.umur-born {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.umur-born-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--glass-border);
+}
+.umur-born-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+.umur-born-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.umur-hijri-text { color: var(--gold); }
+
+/* ── Age cards ── */
+.umur-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.umur-card {
+  padding: 20px;
+  border-radius: var(--radius);
+  background: linear-gradient(145deg, rgba(46,168,213,0.12), rgba(46,168,213,0.03));
+  border: 1px solid rgba(46,168,213,0.3);
+}
+.umur-card--hijri {
+  background: linear-gradient(145deg, rgba(244,197,66,0.12), rgba(244,197,66,0.03));
+  border-color: rgba(244,197,66,0.3);
+}
+.umur-card-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+}
+.umur-card-icon { font-size: 1.1rem; }
+.umur-card-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+.umur-card--hijri .umur-card-title { color: var(--gold); }
+
+.umur-nums { display: flex; gap: 10px; }
+.umur-num {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 6px;
+  border-radius: var(--radius-sm);
+  background: rgba(0,0,0,0.22);
+}
+.umur-num-v {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.umur-card--hijri .umur-num-v { color: var(--gold); }
+.umur-num-l {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* ── Extra stats ── */
+.umur-extra {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.umur-extra-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 13px 15px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--glass-border);
+}
+.umur-extra-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+.umur-extra-value {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent2);
+}
+
+.umur-note {
+  margin-top: 20px;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  text-align: center;
+}
+.umur-note strong { color: var(--text-secondary); }
+
+@media (max-width: 600px) {
+  .umur-wrapper { padding: 18px; }
+  .umur-btn { width: 100%; }
+  .umur-nums { gap: 6px; }
 }
 
 /* ══════════════════════════════════════════════════
