@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Khalifah Diary – Waktu Solat Malaysia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="reactbits.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <span class="brand-icon">☽</span>
+        <span class="brand-text">Khalifah Diary</span>
+      </div>
+      <div class="nav-links">
+        <a href="#solat" class="nav-link">Waktu Solat</a>
+        <a href="#hadith" class="nav-link">Hadis</a>
+        <a href="#calendar" class="nav-link">Kalendar</a>
+        <a href="#umur" class="nav-link">Umur</a>
+      </div>
+      <button class="nav-menu-btn" id="navMenuBtn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav-mobile" id="navMobile">
+      <a href="#solat" class="nav-link">Waktu Solat</a>
+      <a href="#hadith" class="nav-link">Hadis</a>
+      <a href="#calendar" class="nav-link">Kalendar</a>
+      <a href="#umur" class="nav-link">Umur</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <canvas id="starsCanvas"></canvas>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-date-block glass-card" id="heroDateBlock">
+        <div class="hero-hijri" id="heroHijri">جمعة، ١٤ ذو القعدة ١٤٤٦</div>
+        <div class="hero-masihi" id="heroMasihi">Rabu, 14 Mei 2025</div>
+        <div class="hero-clock" id="heroClock">00:00:00</div>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="hero-title-top">خليفة دياري</span>
+        <span class="hero-title-bottom">Khalifah Diary</span>
+      </h1>
+      <p class="hero-subtitle">Waktu Solat Malaysia · Panduan Umat Islam</p>
+
+      <!-- Region Selector -->
+      <div class="region-selector glass-card">
+        <label class="region-label">Pilih Kawasan</label>
+        <div class="region-selects">
+          <div class="select-wrapper">
+            <select id="stateSelect" aria-label="Pilih Negeri">
+              <option value="">-- Pilih Negeri --</option>
+            </select>
+          </div>
+          <div class="select-wrapper">
+            <select id="zoneSelect" aria-label="Pilih Zon" disabled>
+              <option value="">-- Pilih Zon --</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="loadPrayerBtn">Cari Waktu</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WAKTU SOLAT -->
+  <section class="section" id="solat">
+    <div class="section-inner">
+      <div class="section-header reveal">
+        <h2 class="section-title">Waktu Solat</h2>
+        <p class="section-subtitle" id="solatSubtitle">Pilih kawasan untuk melihat waktu solat</p>
+      </div>
+
+      <!-- ── Unified Prayer Widget ── -->
+      <div class="pw-shell glass-card reveal" id="countdownWrap" style="display:none">
+
+        <!-- Arc + Hero -->
+        <div class="pw-hero">
+          <!-- SVG arc ring -->
+          <div class="pw-arc-wrap">
+            <svg class="pw-arc-svg" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#2ea8d5"/>
+                  <stop offset="100%" stop-color="#38d9a9"/>
+                </linearGradient>
+                <filter id="arcGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <!-- Track -->
+              <circle class="pw-arc-track" cx="130" cy="130" r="110" stroke-width="8" stroke-linecap="round"/>
+              <!-- Progress -->
+              <circle class="pw-arc-prog" id="arcProgress" cx="130" cy="130" r="110"
+                stroke="url(#arcGrad)" stroke-width="8" stroke-linecap="round"
+                filter="url(#arcGlow)"
+                stroke-dasharray="691.15" stroke-dashoffset="691.15"
+                transform="rotate(-90 130 130)"/>
+              <!-- Dot at head of arc -->
+              <circle class="pw-arc-dot" id="arcDot" cx="130" cy="20" r="5" fill="#38d9a9" filter="url(#arcGlow)"/>
+            </svg>
+
+            <!-- Centre content -->
+            <div class="pw-arc-center">
+              <div class="pw-next-label">Solat Seterusnya</div>
+              <div class="pw-next-name" id="countdownName">–</div>
+              <div class="pw-timer" id="countdownTimer">
+                <div class="pw-td"><span class="pw-tn" id="cdHours">00</span><span class="pw-tl">Jam</span></div>
+                <span class="pw-tsep">:</span>
+                <div class="pw-td"><span class="pw-tn" id="cdMinutes">00</span><span class="pw-tl">Minit</span></div>
+                <span class="pw-tsep">:</span>
+                <div class="pw-td"><span class="pw-tn" id="cdSeconds">00</span><span class="pw-tl">Saat</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="pw-divider"></div>
+
+        <!-- Timeline strip -->
+        <div class="pw-timeline" id="prayerCards"></div>
+
+        <!-- Progress bar -->
+        <div class="pw-bar-wrap" id="countdownProgress">
+          <div class="pw-bar" id="progressBar"></div>
+        </div>
+
+        <!-- Qiblat bearing -->
+        <div class="pw-bearing" id="bearingInfo" style="display:none">
+          <span class="pw-bearing-icon">🧭</span>
+          <span id="bearingText">Arah Kiblat: –</span>
+        </div>
+      </div>
+
+      <!-- Loading / placeholder (outside widget, shown before load) -->
+      <div class="prayer-grid" id="prayerGrid">
+        <div class="prayer-loading" id="prayerLoading" style="display:none">
+          <div class="spinner"></div>
+          <p>Mendapatkan waktu solat…</p>
+        </div>
+        <div class="prayer-placeholder" id="prayerPlaceholder">
+          <div class="placeholder-icon">🕌</div>
+          <p>Sila pilih negeri dan zon untuk memaparkan waktu solat</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HADITH -->
+  <section class="section hadith-section" id="hadith">
+    <div class="section-inner">
+      <div class="section-header reveal">
+        <h2 class="section-title">Hadis Pilihan</h2>
+        <p class="section-subtitle">Mutiara Kata Rasulullah ﷺ</p>
+      </div>
+
+      <div class="hadith-track" id="hadithTrack">
+        <!-- Filled by JS -->
+      </div>
+
+      <div class="hadith-nav">
+        <button class="hadith-btn" id="hadithPrev" aria-label="Hadith sebelum">&#8592;</button>
+        <div class="hadith-dots" id="hadithDots"></div>
+        <button class="hadith-btn" id="hadithNext" aria-label="Hadith seterusnya">&#8594;</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALENDAR -->
+  <section class="section calendar-section" id="calendar">
+    <div class="section-inner">
+      <div class="section-header reveal">
+        <h2 class="section-title">Kalendar 2026</h2>
+        <p class="section-subtitle">Tarikh Masihi · Hijri · Cuti Umum</p>
+      </div>
+
+      <div class="calendar-wrapper glass-card reveal">
+        <!-- Calendar Header -->
+        <div class="cal-header">
+          <button class="cal-nav-btn" id="calPrev" aria-label="Bulan sebelum">&#8249;</button>
+          <div class="cal-month-info">
+            <h3 class="cal-month-name" id="calMonthName">Mei 2026</h3>
+            <p class="cal-hijri-month" id="calHijriMonth">Zulkaedah 1447</p>
+          </div>
+          <button class="cal-nav-btn" id="calNext" aria-label="Bulan seterusnya">&#8250;</button>
+        </div>
+
+        <!-- Day Labels -->
+        <div class="cal-days-header">
+          <span>Ahd</span><span>Isn</span><span>Sel</span>
+          <span>Rab</span><span>Kha</span><span class="friday">Jum</span><span>Sab</span>
+        </div>
+
+        <!-- Calendar Body -->
+        <div class="cal-body" id="calBody"></div>
+
+        <!-- Swipe hint -->
+        <p class="swipe-hint">← Leret untuk tukar bulan →</p>
+
+        <!-- Legend -->
+        <div class="cal-legend">
+          <span class="legend-item"><span class="legend-dot national"></span>Cuti Umum Nasional</span>
+          <span class="legend-item"><span class="legend-dot state-h"></span>Cuti Negeri</span>
+          <span class="legend-item"><span class="legend-dot today"></span>Hari Ini</span>
+        </div>
+      </div>
+
+      <!-- Holiday detail popup -->
+      <div class="holiday-popup glass-card" id="holidayPopup" style="display:none">
+        <button class="popup-close" id="popupClose">✕</button>
+        <div class="popup-content" id="popupContent"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KALKULATOR UMUR -->
+  <section class="section umur-section" id="umur">
+    <div class="section-inner">
+      <div class="section-header reveal">
+        <h2 class="section-title">Kalkulator Umur</h2>
+        <p class="section-subtitle">Miladi · Hijri (Istilahi)</p>
+      </div>
+
+      <div class="umur-wrapper glass-card reveal">
+        <!-- Input form -->
+        <div class="umur-form">
+          <div class="umur-field">
+            <label class="umur-label" for="umurBirth">Tarikh Lahir (Masihi)</label>
+            <input type="date" id="umurBirth" class="umur-input" />
+          </div>
+          <div class="umur-field">
+            <label class="umur-label" for="umurRef">Tarikh Kiraan</label>
+            <input type="date" id="umurRef" class="umur-input" />
+          </div>
+          <button class="btn-primary umur-btn" id="umurCalcBtn">Kira Umur</button>
+        </div>
+
+        <p class="umur-error" id="umurError" style="display:none"></p>
+
+        <!-- Results -->
+        <div class="umur-result" id="umurResult" style="display:none">
+
+          <div class="umur-born">
+            <div class="umur-born-item">
+              <span class="umur-born-label">Hari Lahir</span>
+              <span class="umur-born-value" id="umurBornDay">–</span>
+            </div>
+            <div class="umur-born-item">
+              <span class="umur-born-label">Tarikh Masihi</span>
+              <span class="umur-born-value" id="umurBornMasihi">–</span>
+            </div>
+            <div class="umur-born-item">
+              <span class="umur-born-label">Tarikh Hijri</span>
+              <span class="umur-born-value umur-hijri-text" id="umurBornHijri">–</span>
+            </div>
+          </div>
+
+          <div class="umur-cards">
+            <div class="umur-card">
+              <div class="umur-card-head">
+                <span class="umur-card-icon">🗓</span>
+                <span class="umur-card-title">Umur Miladi</span>
+              </div>
+              <div class="umur-nums" id="umurMasihiNums"></div>
+            </div>
+            <div class="umur-card umur-card--hijri">
+              <div class="umur-card-head">
+                <span class="umur-card-icon">☽</span>
+                <span class="umur-card-title">Umur Hijri</span>
+              </div>
+              <div class="umur-nums" id="umurHijriNums"></div>
+            </div>
+          </div>
+
+          <div class="umur-extra">
+            <div class="umur-extra-item">
+              <span class="umur-extra-label">Jumlah Hari</span>
+              <span class="umur-extra-value" id="umurTotalDays">–</span>
+            </div>
+            <div class="umur-extra-item">
+              <span class="umur-extra-label">Jumlah Minggu</span>
+              <span class="umur-extra-value" id="umurTotalWeeks">–</span>
+            </div>
+            <div class="umur-extra-item">
+              <span class="umur-extra-label">Hari Lahir Masihi</span>
+              <span class="umur-extra-value" id="umurNextMasihi">–</span>
+            </div>
+            <div class="umur-extra-item">
+              <span class="umur-extra-label">Hari Lahir Hijri</span>
+              <span class="umur-extra-value" id="umurNextHijri">–</span>
+            </div>
+          </div>
+
+          <p class="umur-note">
+            Kiraan Hijri menggunakan kaedah <strong>Istilahi</strong> (taqwim hisab),
+            sama seperti e-Falak JAKIM. Mungkin berbeza ±1 hari berbanding kaedah rukyah.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="nav-brand">
+          <span class="brand-icon">☽</span>
+          <span class="brand-text">Khalifah Diary</span>
+        </div>
+      </div>
+      <p class="footer-tagline">
+        "وَأَقِيمُوا الصَّلَاةَ وَآتُوا الزَّكَاةَ"<br/>
+        <small>Dan dirikanlah solat dan tunaikanlah zakat. <br>— Al-Baqarah: 43</small>
+      </p>
+      <p class="footer-source">
+        Data waktu solat: <a href="https://www.e-solat.gov.my" target="_blank" rel="noopener">e-solat.gov.my</a> (JAKIM)
+      </p>
+      <p class="footer-copy">© 2026 Khalifah Diary · Dibina dengan ❤ untuk Umat Islam Malaysia</p>
+    </div>
+  </footer>
+
+  <!-- GSAP CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="app.js"></script>
+  <script src="reactbits.js"></script>
+</body>
+</html>
