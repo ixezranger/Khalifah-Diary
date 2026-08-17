@@ -889,31 +889,49 @@ function renderPrayerCards(data) {
   });
 
   document.getElementById('countdownWrap').style.display = 'block';
-  updateArc();
+  // The arc is driven by updateCountdown(), which startCountdown() fires
+  // immediately after this returns.
 }
 
-// Update the SVG arc based on time of day (Subuh → Isyak span)
-function updateArc() {
+// Ring progress: fraction elapsed between the previous prayer and the next one
+// — the same interval the digits in the centre are counting down. `frac` is
+// supplied by updateCountdown() so both read from one calculation and can never
+// disagree. (It previously measured elapsed time in the 24-hour day, which is
+// why the ring and the countdown told different stories.)
+let arcPrevFrac = 0;
+
+function updateArc(frac) {
   if (!prayerData) return;
-  const arcEl  = document.getElementById('arcProgress');
-  const dotEl  = document.getElementById('arcDot');
+  const arcEl = document.getElementById('arcProgress');
+  const dotEl = document.getElementById('arcDot');
   if (!arcEl || !dotEl) return;
 
-  const now    = new Date();
-  const dayMs  = 24 * 3600 * 1000;
-  const pct    = (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / (dayMs / 1000);
+  const f = Math.max(0, Math.min(1, Number(frac) || 0));
 
-  const circ   = 2 * Math.PI * 110;          // r=110
-  const offset = circ * (1 - pct);
-  arcEl.style.strokeDashoffset = offset;
+  // At a prayer boundary f drops from ~1 straight back to 0. The CSS carries a
+  // 1s linear transition, so without this the arc visibly sweeps backwards for
+  // a second. Drop the transition for the single frame that wraps.
+  const wrapped = f < arcPrevFrac - 0.5;
+  if (wrapped) {
+    arcEl.style.transition = 'none';
+    dotEl.style.transition = 'none';
+  }
 
-  // Move dot around the arc
-  const angle  = pct * 360 - 90;             // starts at top (-90°)
-  const rad    = (angle * Math.PI) / 180;
-  const cx     = 130 + 110 * Math.cos(rad);
-  const cy     = 130 + 110 * Math.sin(rad);
-  dotEl.setAttribute('cx', cx.toFixed(2));
-  dotEl.setAttribute('cy', cy.toFixed(2));
+  const circ = 2 * Math.PI * 110;            // r=110
+  arcEl.style.strokeDashoffset = circ * (1 - f);
+
+  // Head of the arc, starting at the top (-90°)
+  const rad = ((f * 360 - 90) * Math.PI) / 180;
+  dotEl.setAttribute('cx', (130 + 110 * Math.cos(rad)).toFixed(2));
+  dotEl.setAttribute('cy', (130 + 110 * Math.sin(rad)).toFixed(2));
+
+  if (wrapped) {
+    requestAnimationFrame(() => {
+      arcEl.style.transition = '';
+      dotEl.style.transition = '';
+    });
+  }
+  arcPrevFrac = f;
 }
 
 function parseTime(timeStr) {
@@ -943,7 +961,12 @@ function updateCountdown() {
   const diff = nextEntry.t - now;
   const totalMs = (() => {
     const prevTimes = times.filter(t => t.t && t.t <= now);
-    if (prevTimes.length === 0) return nextEntry.t - new Date(now.setHours(0,0,0,0));
+    if (prevTimes.length === 0) {
+      // Before the first entry of the day, measure from midnight. Build a
+      // separate date for it — now.setHours() mutates `now` in place.
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return nextEntry.t - midnight;
+    }
     return nextEntry.t - prevTimes[prevTimes.length - 1].t;
   })();
   const h = Math.floor(diff / 3600000);
@@ -956,9 +979,11 @@ function updateCountdown() {
   const cdTimeStr = nextTime12.period ? ` · ${nextTime12.time} <span class="cd-ampm">${nextTime12.period}</span>` : '';
   document.getElementById('countdownName').innerHTML = `${nextEntry.arabic} ${nextEntry.label}${cdTimeStr}`;
 
-  const pct = Math.max(0, Math.min(100, 100 - (diff / totalMs) * 100));
-  document.getElementById('progressBar').style.width = `${pct}%`;
-  updateArc();
+  // Fraction of the current prayer interval already elapsed. The bottom bar and
+  // the ring both render this same number.
+  const frac = totalMs > 0 ? Math.max(0, Math.min(1, 1 - diff / totalMs)) : 0;
+  document.getElementById('progressBar').style.width = `${(frac * 100).toFixed(2)}%`;
+  updateArc(frac);
 }
 
 // ═══════════════════════════════════════════
@@ -1182,7 +1207,7 @@ function initParticles() {
   const ctx = canvas.getContext('2d');
   // Hardcoded to match --accent, --accent2, --gold CSS vars
   const COLS = ['46,168,213', '56,217,169', '244,197,66'];
-  const COUNT = 60;
+  const COUNT = 90;   // was 60 — raised by 50%
   const mouse = { x: -9999, y: -9999 };
   let particles = [];
 
