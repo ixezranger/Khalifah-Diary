@@ -237,14 +237,14 @@
     <div class="section-inner">
       <div class="section-header reveal">
         <h2 class="section-title">Kalkulator Umur</h2>
-        <p class="section-subtitle">Miladi · Hijri (Istilahi)</p>
+        <p class="section-subtitle">Umur · Selisih Tarikh · Penukar Hijri</p>
       </div>
 
       <div class="umur-wrapper glass-card reveal">
         <!-- Input form -->
         <div class="umur-form">
           <div class="umur-field">
-            <label class="umur-label" for="umurBirth">Tarikh Lahir (Masihi)</label>
+            <label class="umur-label" for="umurBirth">Tarikh Lahir / Mula (Masihi)</label>
             <input type="date" id="umurBirth" class="umur-input" />
           </div>
           <div class="umur-field">
@@ -254,23 +254,49 @@
           <button class="btn-primary umur-btn" id="umurCalcBtn">Kira Umur</button>
         </div>
 
+        <p class="umur-hint">
+          Kedua-dua tarikh boleh diisi dengan tarikh akan datang — gunakan untuk
+          menyemak tarikh Hijri hari raya, cuti atau majlis yang bakal tiba.
+        </p>
+
         <p class="umur-error" id="umurError" style="display:none"></p>
 
         <!-- Results -->
         <div class="umur-result" id="umurResult" style="display:none">
 
-          <div class="umur-born">
-            <div class="umur-born-item">
-              <span class="umur-born-label">Hari Lahir</span>
-              <span class="umur-born-value" id="umurBornDay">–</span>
+          <div class="umur-born-group">
+            <span class="umur-group-title">Tarikh Lahir / Mula</span>
+            <div class="umur-born">
+              <div class="umur-born-item">
+                <span class="umur-born-label">Hari</span>
+                <span class="umur-born-value" id="umurBornDay">–</span>
+              </div>
+              <div class="umur-born-item">
+                <span class="umur-born-label">Tarikh Masihi</span>
+                <span class="umur-born-value" id="umurBornMasihi">–</span>
+              </div>
+              <div class="umur-born-item">
+                <span class="umur-born-label">Tarikh Hijri</span>
+                <span class="umur-born-value umur-hijri-text" id="umurBornHijri">–</span>
+              </div>
             </div>
-            <div class="umur-born-item">
-              <span class="umur-born-label">Tarikh Masihi</span>
-              <span class="umur-born-value" id="umurBornMasihi">–</span>
-            </div>
-            <div class="umur-born-item">
-              <span class="umur-born-label">Tarikh Hijri</span>
-              <span class="umur-born-value umur-hijri-text" id="umurBornHijri">–</span>
+          </div>
+
+          <div class="umur-born-group">
+            <span class="umur-group-title">Tarikh Kiraan</span>
+            <div class="umur-born">
+              <div class="umur-born-item">
+                <span class="umur-born-label">Hari</span>
+                <span class="umur-born-value" id="umurRefDay">–</span>
+              </div>
+              <div class="umur-born-item">
+                <span class="umur-born-label">Tarikh Masihi</span>
+                <span class="umur-born-value" id="umurRefMasihi">–</span>
+              </div>
+              <div class="umur-born-item">
+                <span class="umur-born-label">Tarikh Hijri</span>
+                <span class="umur-born-value umur-hijri-text" id="umurRefHijri">–</span>
+              </div>
             </div>
           </div>
 
@@ -278,14 +304,14 @@
             <div class="umur-card">
               <div class="umur-card-head">
                 <span class="umur-card-icon">🗓</span>
-                <span class="umur-card-title">Umur Miladi</span>
+                <span class="umur-card-title" id="umurTitleMasihi">Umur Miladi</span>
               </div>
               <div class="umur-nums" id="umurMasihiNums"></div>
             </div>
             <div class="umur-card umur-card--hijri">
               <div class="umur-card-head">
                 <span class="umur-card-icon">☽</span>
-                <span class="umur-card-title">Umur Hijri</span>
+                <span class="umur-card-title" id="umurTitleHijri">Umur Hijri</span>
               </div>
               <div class="umur-nums" id="umurHijriNums"></div>
             </div>
@@ -311,8 +337,10 @@
           </div>
 
           <p class="umur-note">
-            Kiraan Hijri menggunakan kaedah <strong>Istilahi</strong> (taqwim hisab),
-            sama seperti e-Falak JAKIM. Mungkin berbeza ±1 hari berbanding kaedah rukyah.
+            Tarikh Hijri dipaparkan mengikut <strong>takwim JAKIM</strong> bagi tarikh dalam
+            julat 2025–2028. Di luar julat itu — dan bagi semua kiraan umur Hijri — kaedah
+            <strong>Istilahi</strong> (taqwim hisab) digunakan, sama seperti e-Falak JAKIM.
+            Mungkin berbeza ±1 hari berbanding kaedah rukyah.
           </p>
         </div>
       </div>

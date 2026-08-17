@@ -437,11 +437,30 @@ const MY_HIJRI_MONTH_STARTS = [
   [2028,  4, 26, 1449, 12],  // 1 Zulhijjah 1449H
 ];
 
+// Coverage bounds of the takwim table above. A Hijri month never exceeds 30
+// days, so +29 days past the final tabulated start is the last date it can
+// legitimately describe.
+const TAKWIM_FIRST    = MY_HIJRI_MONTH_STARTS[0];
+const TAKWIM_LAST     = MY_HIJRI_MONTH_STARTS[MY_HIJRI_MONTH_STARTS.length - 1];
+const TAKWIM_START_MS = new Date(TAKWIM_FIRST[0], TAKWIM_FIRST[1] - 1, TAKWIM_FIRST[2]).getTime();
+const TAKWIM_END_MS   = new Date(TAKWIM_LAST[0],  TAKWIM_LAST[1]  - 1, TAKWIM_LAST[2]).getTime()
+                        + 29 * 86400000;
+
+function isInTakwim(ms) { return ms >= TAKWIM_START_MS && ms <= TAKWIM_END_MS; }
+
 function toHijriMY(date) {
   // Normalise to local midnight first. Differencing raw timestamps leaves a
   // fractional day whenever `date` carries a time of day, and rounding that
   // pushed the Hijri date forward a day every afternoon.
   const ms = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+
+  // Past the table's last month start the loop below would keep counting days
+  // into that same month forever ("day 900 of Zulhijjah"). Anything outside
+  // the tabulated range falls back to the Istilahi calculation instead.
+  if (ms > TAKWIM_END_MS) {
+    return toHijri(date.getFullYear(), date.getMonth() + 1, date.getDate());
+  }
+
   for (let i = MY_HIJRI_MONTH_STARTS.length - 1; i >= 0; i--) {
     const [sy, sm, sd, hy, hm] = MY_HIJRI_MONTH_STARTS[i];
     const startMs = new Date(sy, sm - 1, sd).getTime();
@@ -1335,11 +1354,12 @@ function initAgeCalculator() {
   const resultEl = document.getElementById('umurResult');
   const errorEl  = document.getElementById('umurError');
 
-  // Default the reference date to today, and cap both inputs there.
+  // Default the reference date to today. Neither input is capped: future dates
+  // are allowed so the tool doubles as a Masihi -> Hijri lookup for upcoming
+  // dates, and a reversed range is counted forward rather than rejected.
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
   refEl.value = todayStr;
-  birthEl.max = todayStr;
 
   function showError(msg) {
     errorEl.textContent = msg;
@@ -1356,41 +1376,71 @@ function initAgeCalculator() {
 
   function fmtGreg(p) { return `${p.day} ${MALAY_MONTHS[p.month - 1]} ${p.year}`; }
   function fmtHijri(h) { return `${h.day} ${HIJRI_MONTHS[h.month - 1]} ${h.year}H`; }
+
+  // Displayed Hijri dates follow the JAKIM takwim table wherever it reaches, so
+  // they agree with the calendar section. Outside that window the Istilahi
+  // result is shown and labelled, rather than silently implying takwim.
+  function hijriDisplay(p) {
+    const ms = new Date(p.year, p.month - 1, p.day).getTime();
+    const h  = toHijriMY(new Date(p.year, p.month - 1, p.day));
+    return fmtHijri(h) + (isInTakwim(ms) ? '' : ' \u00B7 Istilahi');
+  }
   function dayName(jd) { return MALAY_DAYS[((jd - JD_UNIX_EPOCH + 4) % 7 + 7) % 7]; }
 
   function calculate() {
-    const birth = parseDateInput(birthEl.value);
-    const ref   = parseDateInput(refEl.value);
-    if (!birth) return showError('Sila masukkan tarikh lahir yang sah.');
-    if (!ref)   return showError('Sila masukkan tarikh kiraan yang sah.');
-    if (birth.jd > ref.jd) return showError('Tarikh lahir tidak boleh selepas tarikh kiraan.');
+    const a = parseDateInput(birthEl.value);
+    const b = parseDateInput(refEl.value);
+    if (!a) return showError('Sila masukkan tarikh lahir / tarikh mula yang sah.');
+    if (!b) return showError('Sila masukkan tarikh kiraan yang sah.');
+    if (a.year < 622 || b.year < 622) {
+      return showError('Kalendar Hijri bermula pada tahun 622 Masihi. Sila pilih tarikh selepas itu.');
+    }
 
     errorEl.style.display = 'none';
 
-    const birthH = toHijri(birth.year, birth.month, birth.day);
-    const refH   = toHijri(ref.year, ref.month, ref.day);
-    refH.jd = ref.jd; // same instant, expressed on the Hijri calendar
+    // Either direction is valid. When the first date sits after the reference
+    // date the span is measured forward instead of rejected, so an upcoming
+    // date reads as time remaining rather than a negative age.
+    const forward = a.jd > b.jd;
+    const from = forward ? b : a;
+    const to   = forward ? a : b;
 
-    // Born
-    document.getElementById('umurBornDay').textContent     = dayName(birth.jd);
-    document.getElementById('umurBornMasihi').textContent  = fmtGreg(birth);
-    document.getElementById('umurBornHijri').textContent   = fmtHijri(birthH);
+    const aH = toHijri(a.year, a.month, a.day);
+    const bH = toHijri(b.year, b.month, b.day);
+    const fromH = forward ? bH : aH;
+    const toH   = forward ? aH : bH;
+    fromH.jd = from.jd;   // same instants, expressed on the Hijri calendar
+    toH.jd   = to.jd;
 
-    // Ages
-    renderNums(document.getElementById('umurMasihiNums'), diffYMD(birth, ref, gregMonthLength, gregToJD));
-    renderNums(document.getElementById('umurHijriNums'),  diffYMD(birthH, refH, hijriMonthLength, hijriToJD));
+    // Both dates, each with its Hijri equivalent
+    document.getElementById('umurBornDay').textContent    = dayName(a.jd);
+    document.getElementById('umurBornMasihi').textContent = fmtGreg(a);
+    document.getElementById('umurBornHijri').textContent  = hijriDisplay(a);
+    document.getElementById('umurRefDay').textContent     = dayName(b.jd);
+    document.getElementById('umurRefMasihi').textContent  = fmtGreg(b);
+    document.getElementById('umurRefHijri').textContent   = hijriDisplay(b);
+
+    // Span. Age arithmetic stays on the Istilahi calendar in both calendars,
+    // because diffYMD needs a month-length function that is exactly invertible
+    // -- the anchored takwim table is not.
+    document.getElementById('umurTitleMasihi').textContent = forward ? 'Baki Miladi' : 'Umur Miladi';
+    document.getElementById('umurTitleHijri').textContent  = forward ? 'Baki Hijri'  : 'Umur Hijri';
+    renderNums(document.getElementById('umurMasihiNums'), diffYMD(from,  to,  gregMonthLength,  gregToJD));
+    renderNums(document.getElementById('umurHijriNums'),  diffYMD(fromH, toH, hijriMonthLength, hijriToJD));
 
     // Totals
-    const totalDays = ref.jd - birth.jd;
-    document.getElementById('umurTotalDays').textContent  = totalDays.toLocaleString('ms-MY') + ' hari';
-    document.getElementById('umurTotalWeeks').textContent = Math.floor(totalDays / 7).toLocaleString('ms-MY') + ' minggu';
+    const totalDays = to.jd - from.jd;
+    const suffix = forward ? ' lagi' : '';
+    document.getElementById('umurTotalDays').textContent  = totalDays.toLocaleString('ms-MY') + ' hari' + suffix;
+    document.getElementById('umurTotalWeeks').textContent = Math.floor(totalDays / 7).toLocaleString('ms-MY') + ' minggu' + suffix;
 
-    const nextG = nextAnniversary(birth, ref.jd, 'greg');
-    const nextH = nextAnniversary(birthH, ref.jd, 'hijri');
+    // Anniversaries are always measured forward from the reference date
+    const nextG = nextAnniversary(a,  b.jd, 'greg');
+    const nextH = nextAnniversary(aH, b.jd, 'hijri');
     document.getElementById('umurNextMasihi').textContent = nextG
-      ? `${fmtGreg(jdToGregParts(nextG.jd))} · ${nextG.jd - ref.jd} hari lagi` : '–';
+      ? `${fmtGreg(jdToGregParts(nextG.jd))} \u00B7 ${nextG.jd - b.jd} hari lagi` : '\u2013';
     document.getElementById('umurNextHijri').textContent = nextH
-      ? `${fmtHijri(nextH)} · ${nextH.jd - ref.jd} hari lagi` : '–';
+      ? `${fmtHijri(nextH)} \u00B7 ${nextH.jd - b.jd} hari lagi` : '\u2013';
 
     resultEl.style.display = 'block';
   }
