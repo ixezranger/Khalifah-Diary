@@ -1,0 +1,303 @@
+/* ═══════════════════════════════════════════════════════════
+   Khalifah Diary – reactbits.css
+   ReactBits-inspired motion layer (vanilla port, no React).
+   Loaded AFTER style.css. Adds motion only — palette, layout
+   and content are inherited untouched from style.css.
+
+   Ported effects:
+     SplitText · BlurText · GradientText · ShinyText
+     Aurora · Grain · SpotlightCard · ClickSpark · Magnet
+     AnimatedContent (stagger) · CountUp
+   ═══════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   1 · SPLIT TEXT  (per-character reveal)
+   Gradient is painted PER CHARACTER by JS
+   (each char gets a slice of the full-width
+   gradient). This is deliberate: putting
+   background-clip:text on the parent while
+   transforming child spans triggers the
+   Chromium/WebKit compositing bug that
+   renders blank boxes instead of text.
+══════════════════════════════════════════ */
+.rb-wordwrap {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* The clipped layer. Deliberately carries no transform and no filter. */
+.rb-ink {
+  display: inline;
+  background-repeat: no-repeat;
+}
+
+.rb-char,
+.rb-word {
+  display: inline-block;
+  will-change: transform, opacity, filter;
+  opacity: 0;
+  transform: translateY(0.5em) scale(0.94);
+  filter: blur(10px);
+  transition:
+    opacity   0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    filter    0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i, 0) * 34ms);
+}
+.rb-in .rb-char,
+.rb-in .rb-word,
+.section-header.revealed .rb-char,
+.section-header.revealed .rb-word {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+/* Measuring pass – transforms off so JS reads true glyph positions */
+.rb-measuring .rb-char {
+  transform: none !important;
+  filter: none !important;
+  transition: none !important;
+}
+
+/* Parent of split chars: strip its own gradient + the old reveal anim */
+.section-title.rb-split,
+.hero-title-bottom.rb-split {
+  background-image: none !important;
+  -webkit-text-fill-color: currentColor;
+  color: var(--text-primary);
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+/* ══════════════════════════════════════════
+   2 · BLUR TEXT  (whole-element blur-in)
+   Used for Arabic, which must never be split
+   per character — that breaks glyph shaping.
+══════════════════════════════════════════ */
+.rb-blur-in {
+  opacity: 0;
+  filter: blur(14px);
+  transform: translateY(10px);
+  transition:
+    opacity   0.9s ease,
+    filter    0.9s ease,
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rb-in .rb-blur-in,
+.rb-blur-in.rb-in {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+}
+
+/* ══════════════════════════════════════════
+   3 · GRADIENT TEXT  (slow flowing gradient)
+   Applied to elements that already carry a
+   gradient fill in style.css — only the
+   background-size + animation are added.
+══════════════════════════════════════════ */
+.brand-text,
+.hero-clock,
+.cal-month-name {
+  background-size: 220% 100%;
+  animation: rbFlow 7s ease-in-out infinite;
+}
+@keyframes rbFlow {
+  0%, 100% { background-position:   0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* ══════════════════════════════════════════
+   4 · SHINY TEXT  (sweeping highlight)
+══════════════════════════════════════════ */
+.rb-shiny {
+  background-image: linear-gradient(
+    110deg,
+    currentColor 0%, currentColor 40%,
+    #ffffff 50%,
+    currentColor 60%, currentColor 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rbShine 6s linear infinite;
+}
+@keyframes rbShine {
+  0%   { background-position: 180% 0; }
+  100% { background-position: -80% 0; }
+}
+
+/* ══════════════════════════════════════════
+   5 · AURORA  (hero ambient light curtain)
+══════════════════════════════════════════ */
+.rb-aurora {
+  position: absolute;
+  left: -20%; right: -20%; top: -18%;
+  height: 78%;
+  pointer-events: none;
+  filter: blur(70px) saturate(125%);
+  opacity: 0.5;
+  mix-blend-mode: screen;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 38%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 38%, transparent 100%);
+}
+.rb-aurora-band {
+  position: absolute;
+  top: 0;
+  width: 60%;
+  height: 100%;
+  border-radius: 50%;
+  animation: rbDrift 20s ease-in-out infinite;
+}
+.rb-b1 {
+  left: -6%;
+  background: radial-gradient(closest-side, rgba(46,168,213,0.55), transparent 70%);
+}
+.rb-b2 {
+  left: 24%;
+  background: radial-gradient(closest-side, rgba(56,217,169,0.45), transparent 70%);
+  animation-duration: 26s;
+  animation-delay: -7s;
+}
+.rb-b3 {
+  left: 54%;
+  background: radial-gradient(closest-side, rgba(244,197,66,0.26), transparent 70%);
+  animation-duration: 32s;
+  animation-delay: -14s;
+}
+@keyframes rbDrift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33%      { transform: translate3d(12%, 6%, 0) scale(1.16); }
+  66%      { transform: translate3d(-10%, -4%, 0) scale(0.9); }
+}
+
+/* ══════════════════════════════════════════
+   6 · GRAIN  (fine film texture overlay)
+══════════════════════════════════════════ */
+.rb-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='0.6'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* ══════════════════════════════════════════
+   7 · SPOTLIGHT CARD  (cursor-follow glow)
+   z-index:-1 keeps the glow above the card
+   background but beneath its text content.
+══════════════════════════════════════════ */
+.rb-spot {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(
+    260px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(46,168,213,0.16) 0%,
+    rgba(56,217,169,0.07) 40%,
+    transparent 70%
+  );
+}
+.glass-card:hover > .rb-spot { opacity: 1; }
+
+/* ══════════════════════════════════════════
+   8 · SHEEN  (button + badge highlight sweep)
+══════════════════════════════════════════ */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 45%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-18deg);
+  pointer-events: none;
+  transition: left 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.btn-primary { position: relative; }
+.btn-primary:hover::after { left: 115%; }
+
+.pw-item-badge { position: absolute; overflow: hidden; }
+.pw-item-badge::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -80%;
+  width: 50%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: skewX(-18deg);
+  animation: rbBadgeSweep 3.4s ease-in-out infinite;
+}
+@keyframes rbBadgeSweep {
+  0%, 65%  { left: -80%; }
+  100%     { left: 140%; }
+}
+
+/* ══════════════════════════════════════════
+   9 · ANIMATED CONTENT  (staggered entrance)
+══════════════════════════════════════════ */
+@keyframes rbPop {
+  from { opacity: 0; transform: translateY(16px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.pw-item.rb-pop {
+  animation: rbPop 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 65ms);
+}
+
+/* Countdown seconds tick */
+@keyframes rbTick {
+  0%   { transform: translateY(-3px) scale(1.09); filter: blur(1.5px); opacity: 0.6; }
+  100% { transform: none; filter: blur(0); opacity: 1; }
+}
+.pw-tn.rb-tick { animation: rbTick 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Calendar day: soft pop-in per cell */
+@keyframes rbCell {
+  from { opacity: 0; transform: scale(0.86); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.cal-day.rb-cell {
+  animation: rbCell 0.4s ease both;
+  animation-delay: calc(var(--i, 0) * 8ms);
+}
+
+/* ══════════════════════════════════════════
+   10 · MAGNET  (JS sets inline transform)
+══════════════════════════════════════════ */
+.rb-magnet { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+.rb-magnet.rb-magnet-active { transition: transform 0.08s linear; }
+
+/* ══════════════════════════════════════════
+   11 · REDUCED MOTION
+══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .rb-char, .rb-word, .rb-blur-in {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+  .rb-aurora-band,
+  .brand-text, .hero-clock, .cal-month-name,
+  .rb-shiny, .pw-item-badge::after,
+  .pw-item.rb-pop, .cal-day.rb-cell, .pw-tn.rb-tick {
+    animation: none !important;
+  }
+  .rb-grain { display: none; }
+}
+
+/* Small screens: lighter ambient load */
+@media (max-width: 768px) {
+  .rb-aurora { filter: blur(50px); opacity: 0.4; }
+  .rb-grain  { opacity: 0.025; }
+}

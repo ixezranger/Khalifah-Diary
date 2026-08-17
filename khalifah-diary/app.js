@@ -1127,7 +1127,9 @@ function initGSAP() {
   // gsap.from() animates FROM hidden → natural visible state (correct entrance pattern)
   // No CSS opacity:0 needed — elements render visible if GSAP fails to load
   gsap.from('#heroDateBlock',   { opacity: 0, y: -20, duration: 0.8, delay: 0.3,  ease: "power3.out", clearProps: "opacity,transform" });
-  gsap.from('.hero-title',      { opacity: 0, y: 30,  duration: 0.9, delay: 0.55, ease: "power3.out", clearProps: "opacity,transform" });
+  // .hero-title is animated by reactbits.js (SplitText per-character reveal).
+  // A GSAP transform on the parent would sit above characters that carry
+  // background-clip:text and re-trigger the blank-glyph compositing bug.
   gsap.from('.hero-subtitle',   { opacity: 0,         duration: 0.7, delay: 0.8,  ease: "power2.out", clearProps: "opacity" });
   gsap.from('.region-selector', { opacity: 0, y: 20,  duration: 0.7, delay: 1,    ease: "power3.out", clearProps: "opacity,transform" });
 }
